@@ -1,36 +1,30 @@
 
 import { useState, useEffect } from "react"
-import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Moon, Sun } from "lucide-react"
 
 export function ModeToggle() {
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
+  const [theme, setTheme] = useState<"light" | "dark">("light")
   
-  // Ensure theme toggle only renders client-side
+  // Check for user preference from localStorage or system preference
   useEffect(() => {
-    setMounted(true)
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    
+    if (savedTheme) {
+      setTheme(savedTheme)
+      document.documentElement.classList.toggle("dark", savedTheme === "dark")
+    } else if (systemPrefersDark) {
+      setTheme("dark")
+      document.documentElement.classList.add("dark")
+    }
   }, [])
   
-  if (!mounted) {
-    return (
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className="rounded-full w-9 h-9 relative overflow-hidden"
-        aria-label="Toggle theme"
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Moon className="h-[1.2rem] w-[1.2rem] text-primary" />
-        </div>
-        <span className="sr-only">Toggle theme</span>
-      </Button>
-    )
-  }
-
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light")
+    const newTheme = theme === "light" ? "dark" : "light"
+    setTheme(newTheme)
+    document.documentElement.classList.toggle("dark")
+    localStorage.setItem("theme", newTheme)
   }
 
   return (
@@ -38,27 +32,14 @@ export function ModeToggle() {
       variant="ghost" 
       size="icon" 
       onClick={toggleTheme}
-      className="rounded-full w-9 h-9 relative overflow-hidden hover:bg-primary/10 transition-all duration-500"
+      className="rounded-full w-9 h-9"
       aria-label="Toggle theme"
     >
-      <div 
-        className="absolute inset-0 flex items-center justify-center transition-all duration-500"
-        style={{
-          transform: theme === 'dark' ? 'translateY(0) rotate(0deg)' : 'translateY(-100%) rotate(-30deg)',
-          opacity: theme === 'dark' ? 1 : 0,
-        }}
-      >
-        <Moon className="h-[1.2rem] w-[1.2rem] text-primary" />
-      </div>
-      <div 
-        className="absolute inset-0 flex items-center justify-center transition-all duration-500"
-        style={{
-          transform: theme === 'light' ? 'translateY(0) rotate(0deg)' : 'translateY(100%) rotate(30deg)',
-          opacity: theme === 'light' ? 1 : 0,
-        }}
-      >
-        <Sun className="h-[1.2rem] w-[1.2rem] text-accent" />
-      </div>
+      {theme === "light" ? (
+        <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      ) : (
+        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      )}
       <span className="sr-only">Toggle theme</span>
     </Button>
   )

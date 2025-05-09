@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,39 +7,7 @@
 
 @layer base {
   :root {
-    --background: 240 20% 3%;
-    --foreground: 0 0% 95%;
-
-    --card: 240 17% 6%;
-    --card-foreground: 0 0% 95%;
-
-    --popover: 240 17% 6%;
-    --popover-foreground: 0 0% 95%;
-
-    --primary: 265 100% 60%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 188 85% 42%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 240 9% 18%;
-    --muted-foreground: 240 5% 65%;
-
-    --accent: 35 100% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 75% 60%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 9% 18%;
-    --input: 240 9% 18%;
-    --ring: 265 100% 60%;
-
-    --radius: 0.75rem;
-  }
-
-  .light {
-    --background: 0 0% 100%;
+    --background: 240 20% 98%;
     --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
@@ -48,16 +16,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 265 100% 40%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 245 100% 69%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 188 85% 40%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 247 90% 72%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
 
-    --accent: 35 100% 50%;
+    --accent: 295 100% 73%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -65,7 +33,39 @@
 
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 265 100% 40%;
+    --ring: 245 100% 69%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 240 15% 10%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 13% 13%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 13% 13%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 245 100% 69%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 247 90% 72%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 240 7% 18%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 295 100% 73%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 7% 25%;
+    --input: 240 7% 25%;
+    --ring: 245 100% 69%;
   }
 }
 
@@ -76,11 +76,6 @@
   
   body {
     @apply bg-background text-foreground font-sans;
-    background-image: radial-gradient(
-      circle at center,
-      rgba(131, 51, 255, 0.08) 0%,
-      rgba(0, 0, 0, 0) 70%
-    );
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -88,31 +83,27 @@
   }
   
   h1 {
-    @apply text-4xl md:text-5xl lg:text-6xl leading-[1.1];
+    @apply text-4xl md:text-5xl lg:text-6xl;
   }
   
   h2 {
-    @apply text-3xl md:text-4xl leading-[1.1];
+    @apply text-3xl md:text-4xl;
   }
   
   h3 {
-    @apply text-2xl md:text-3xl leading-[1.2];
+    @apply text-2xl md:text-3xl;
   }
   
   h4 {
-    @apply text-xl md:text-2xl leading-[1.2];
+    @apply text-xl md:text-2xl;
   }
   
   h5 {
-    @apply text-lg md:text-xl leading-[1.3];
+    @apply text-lg md:text-xl;
   }
   
   h6 {
-    @apply text-base md:text-lg leading-[1.3];
-  }
-
-  p {
-    @apply leading-[1.5];
+    @apply text-base md:text-lg;
   }
 }
 
@@ -130,170 +121,10 @@
   }
   
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
   
   .btn-bounce {
     @apply active:scale-95 transition-transform;
   }
-
-  .animated-gradient {
-    @apply relative overflow-hidden;
-    &:after {
-      content: '';
-      @apply absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 -z-10;
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-      animation: gradient-shift 8s ease infinite;
-    }
-  }
-
-  .glass-card {
-    @apply bg-card/90 backdrop-blur-md border border-white/10 shadow-lg;
-  }
-
-  .neon-border {
-    @apply relative z-0;
-    &:before {
-      content: '';
-      @apply absolute -z-10 inset-0 rounded-md p-[1.5px] bg-gradient-to-r from-primary/80 via-accent/80 to-secondary/80;
-    }
-  }
-
-  .text-gradient {
-    @apply bg-gradient-to-r from-primary via-accent to-secondary text-transparent bg-clip-text;
-  }
-
-  .hover-glow {
-    @apply transition-all duration-300;
-    &:hover {
-      @apply shadow-lg shadow-primary/25;
-    }
-  }
-
-  .story-link {
-    @apply relative inline-block;
-    &:after {
-      content: '';
-      @apply absolute w-full scale-x-0 h-0.5 bottom-0 left-0 bg-primary origin-bottom-right transition-transform duration-300;
-    }
-    &:hover:after {
-      @apply scale-x-100 origin-bottom-left;
-    }
-  }
-  
-  .fancy-blur-bg {
-    @apply relative overflow-hidden;
-    &:before {
-      @apply absolute -inset-[20%] bg-glow-radial from-primary/20 via-transparent to-transparent -z-10 opacity-0 transition-opacity duration-700;
-      content: '';
-      aspect-ratio: 1;
-      border-radius: 50%;
-      filter: blur(45px);
-    }
-    &:hover:before {
-      @apply opacity-100;
-    }
-  }
-  
-  .shimmer {
-    @apply relative overflow-hidden;
-    &:after {
-      @apply absolute inset-0 bg-shimmer-gradient;
-      content: '';
-      background-size: 200% 100%;
-      animation: shimmer 2s infinite;
-    }
-  }
-  
-  .morph-blob {
-    @apply animate-morph;
-    border-radius: 60% 40% 30% 70%/60% 30% 70% 40%;
-  }
-  
-  .btn-fancy {
-    @apply relative overflow-hidden bg-gradient-to-r from-primary to-secondary text-white rounded-md px-4 py-2 transition-all duration-300;
-    &:before {
-      @apply absolute inset-0 bg-gradient-to-r from-secondary to-primary opacity-0 transition-opacity duration-300;
-      content: '';
-    }
-    &:hover:before {
-      @apply opacity-100;
-    }
-    & > span {
-      @apply relative z-10;
-    }
-  }
-  
-  .neumorphic {
-    @apply bg-card shadow-[5px_5px_10px_rgba(0,0,0,0.3),-5px_-5px_10px_rgba(255,255,255,0.05)] transition-all duration-300;
-    &:hover, &:focus {
-      @apply shadow-[8px_8px_16px_rgba(0,0,0,0.3),-8px_-8px_16px_rgba(255,255,255,0.05)];
-    }
-  }
-  
-  .spotlight {
-    @apply before:absolute before:h-[300px] before:w-[400px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-primary/30 before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-accent/30 after:via-secondary/30 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-primary/20 before:dark:to-secondary/20 after:dark:from-accent/10 after:dark:via-primary/30 after:dark:opacity-40 before:lg:h-[360px];
-  }
-  
-  .event-card-fancy {
-    @apply bg-gradient-to-br from-card to-card/80 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden transform transition-all duration-500;
-    &:hover {
-      @apply shadow-xl shadow-primary/20 -translate-y-1 border-primary/30;
-    }
-  }
-}
-
-@keyframes gradient-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -500px 0;
-  }
-  100% {
-    background-position: 500px 0;
-  }
-}
-
-.bg-grid-pattern {
-  background-size: 30px 30px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-}
-
-.dark .bg-grid-pattern {
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-}
-
-/* Custom cursor */
-.cursor-glow {
-  cursor: none;
-}
-
-.cursor-dot {
-  @apply fixed w-3 h-3 bg-primary rounded-full z-50 pointer-events-none transition-transform duration-100 -translate-x-1/2 -translate-y-1/2;
-}
-
-.cursor-outline {
-  @apply fixed w-8 h-8 border-2 border-primary/50 rounded-full z-50 pointer-events-none transition-all duration-300 -translate-x-1/2 -translate-y-1/2;
-}
-
-.cursor-glow:hover ~ .cursor-dot {
-  @apply transform scale-150;
-}
-
-.cursor-glow:hover ~ .cursor-outline {
-  @apply transform scale-150 border-primary;
 }

@@ -177,7 +177,7 @@ const featuredEvents = [
     venue: "Downtown Convention Center",
     price: 199,
     imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
-    status: "available" as const,
+    status: "available",
   },
   {
     id: "2",
@@ -189,7 +189,7 @@ const featuredEvents = [
     venue: "Riverside Park",
     price: 89,
     imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop",
-    status: "few-tickets" as const,
+    status: "few-tickets",
   },
   {
     id: "3",
@@ -201,7 +201,7 @@ const featuredEvents = [
     venue: "Business Hub",
     price: 49,
     imageUrl: "https://images.unsplash.com/photo-1551818255-e6e10975bc17?q=80&w=2073&auto=format&fit=crop",
-    status: "available" as const,
+    status: "available",
   },
   {
     id: "4",
@@ -213,7 +213,7 @@ const featuredEvents = [
     venue: "City Park",
     price: 25,
     imageUrl: "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?q=80&w=2074&auto=format&fit=crop",
-    status: "available" as const,
+    status: "available",
   },
   {
     id: "5",
@@ -225,7 +225,7 @@ const featuredEvents = [
     venue: "Modern Art Gallery",
     price: 0,
     imageUrl: "https://images.unsplash.com/photo-1531058020387-3be344556be6?q=80&w=2070&auto=format&fit=crop",
-    status: "free" as const,
+    status: "free",
   },
   {
     id: "6",
@@ -237,7 +237,7 @@ const featuredEvents = [
     venue: "Laugh Factory",
     price: 35,
     imageUrl: "https://images.unsplash.com/photo-1585211969224-3e992986159d?q=80&w=2071&auto=format&fit=crop",
-    status: "sold-out" as const,
+    status: "sold-out",
   },
 ];
 
