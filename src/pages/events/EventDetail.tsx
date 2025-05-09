@@ -122,7 +122,7 @@ const EventDetail = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 container-wide py-8">
           <BadgeStatus 
-            variant={event.featured ? "accent" : "secondary"}
+            variant={event.featured ? "secondary" : "default"}
             className="mb-4"
           >
             {event.featured ? "Featured Event" : event.category}
