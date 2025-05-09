@@ -2,29 +2,21 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
 
 export function ModeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light")
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   
-  // Check for user preference from localStorage or system preference
+  // When mounted, prevent initial flash
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null
-    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-    
-    if (savedTheme) {
-      setTheme(savedTheme)
-      document.documentElement.classList.toggle("dark", savedTheme === "dark")
-    } else if (systemPrefersDark) {
-      setTheme("dark")
-      document.documentElement.classList.add("dark")
-    }
+    setMounted(true)
   }, [])
+
+  if (!mounted) return null
   
   const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light"
-    setTheme(newTheme)
-    document.documentElement.classList.toggle("dark")
-    localStorage.setItem("theme", newTheme)
+    setTheme(theme === "dark" ? "light" : "dark")
   }
 
   return (
@@ -32,15 +24,24 @@ export function ModeToggle() {
       variant="ghost" 
       size="icon" 
       onClick={toggleTheme}
-      className="rounded-full w-9 h-9"
+      className="relative rounded-full w-9 h-9 overflow-hidden group"
       aria-label="Toggle theme"
     >
-      {theme === "light" ? (
-        <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      ) : (
-        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      )}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <Sun className={`absolute h-[1.2rem] w-[1.2rem] transition-all duration-500 ${
+          theme === 'dark' 
+            ? 'rotate-90 scale-0 opacity-0' 
+            : 'rotate-0 scale-100 opacity-100'
+        }`} />
+        <Moon className={`absolute h-[1.2rem] w-[1.2rem] transition-all duration-500 ${
+          theme === 'dark' 
+            ? 'rotate-0 scale-100 opacity-100' 
+            : '-rotate-90 scale-0 opacity-0'
+        }`} />
+      </div>
       <span className="sr-only">Toggle theme</span>
+      
+      <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-20 bg-gradient-to-tr from-primary to-secondary transition-opacity duration-300"></div>
     </Button>
   )
 }
