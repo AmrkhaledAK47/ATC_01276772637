@@ -36,7 +36,7 @@ export function EventCard({
 }: EventCardProps) {
   return (
     <div className={cn(
-      "overflow-hidden rounded-lg border glass-card transition-all duration-500 group hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1",
+      "event-card-fancy group relative",
       className
     )}>
       <div className="relative overflow-hidden">
@@ -45,8 +45,8 @@ export function EventCard({
           alt={title}
           className="h-48 w-full object-cover transition-all duration-700 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-60 group-hover:opacity-70 transition-opacity duration-500" />
-        <div className="absolute top-2 left-2 transition-all duration-300 group-hover:translate-y-1">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-70 group-hover:opacity-60 transition-opacity duration-500" />
+        <div className="absolute top-2 left-2 transition-all duration-500 group-hover:translate-y-1">
           <BadgeStatus 
             variant={
               status === "free" 
@@ -57,7 +57,7 @@ export function EventCard({
                 ? "destructive"
                 : "secondary"
             }
-            className="shadow-lg"
+            className="shadow-lg backdrop-blur-sm"
           >
             {status === "available" 
               ? "Available" 
@@ -68,16 +68,16 @@ export function EventCard({
               : "Free"}
           </BadgeStatus>
         </div>
-        <div className="absolute top-2 right-2 transition-all duration-300 group-hover:translate-y-1">
-          <BadgeStatus variant="outline" className="bg-black/50 backdrop-blur-sm">
+        <div className="absolute top-2 right-2 transition-all duration-500 group-hover:translate-y-1">
+          <BadgeStatus variant="outline" className="bg-black/40 backdrop-blur-sm">
             {category}
           </BadgeStatus>
         </div>
       </div>
       
-      <div className="p-4">
-        <h3 className="text-lg font-bold line-clamp-1 group-hover:text-primary transition-colors duration-300">{title}</h3>
-        <p className="text-muted-foreground mt-1 text-sm line-clamp-2">{description}</p>
+      <div className="p-5">
+        <h3 className="text-xl font-bold line-clamp-1 group-hover:text-primary transition-colors duration-300">{title}</h3>
+        <p className="text-muted-foreground mt-2 text-sm line-clamp-2">{description}</p>
         
         <div className="mt-4 space-y-2">
           <div className="flex items-center gap-2 text-sm">
@@ -96,9 +96,9 @@ export function EventCard({
           </div>
         </div>
         
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
+        <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/10">
           <div>
-            <p className="text-sm text-muted-foreground">Price:</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Price</p>
             <p className="font-semibold text-lg">
               {typeof price === "number" 
                 ? price === 0 
@@ -109,13 +109,14 @@ export function EventCard({
           </div>
           
           <Link to={`/events/${id}`}>
-            <Button className="relative overflow-hidden group-hover:shadow-md group-hover:shadow-primary/20 transition-all duration-300">
+            <Button className="btn-fancy">
               <span className="relative z-10">View Details</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             </Button>
           </Link>
         </div>
       </div>
+      
+      <div className="absolute -inset-px rounded-lg bg-gradient-to-r from-primary/50 via-accent/50 to-secondary/50 opacity-0 group-hover:opacity-30 -z-10 transition-opacity duration-700" />
     </div>
   )
 }

@@ -12,7 +12,8 @@ export function MainLayout({ children }: MainLayoutProps) {
     <div className="flex min-h-screen flex-col bg-background">
       <div className="fixed inset-0 pointer-events-none -z-10">
         <div className="absolute inset-0 bg-grid-pattern opacity-30" />
-        <div className="absolute inset-0 bg-gradient-radial from-primary/5 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-radial from-primary/10 to-transparent" />
+        <div className="absolute inset-0 spotlight" />
       </div>
       <Header />
       <main className="flex-1 animate-fade-in relative">
