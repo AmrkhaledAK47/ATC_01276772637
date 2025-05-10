@@ -16,6 +16,8 @@ import { useEvents } from "@/context/EventContext"
 import { useToast } from "@/components/ui/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
 
+type EventStatus = "available" | "sold-out" | "few-tickets" | "free";
+
 const EventForm = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -34,7 +36,7 @@ const EventForm = () => {
     venue: "",
     price: 0,
     imageUrl: "",
-    status: "available",
+    status: "available" as EventStatus,
     featured: false
   })
   
@@ -183,7 +185,7 @@ const EventForm = () => {
               <Label htmlFor="status">Status</Label>
               <Select 
                 value={eventData.status}
-                onValueChange={(value: "available" | "sold-out" | "few-tickets" | "free") => setEventData({...eventData, status: value})}
+                onValueChange={(value: EventStatus) => setEventData({...eventData, status: value})}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select status" />
