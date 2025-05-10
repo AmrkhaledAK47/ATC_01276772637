@@ -11,7 +11,7 @@ interface FeaturedCarouselProps {
 export function FeaturedCarousel({ events }: FeaturedCarouselProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
-  const maxSlide = Math.ceil(events.length / 3) - 1
+  const maxSlide = Math.max(0, Math.ceil(events.length / 3) - 1)
   const slideRef = useRef<HTMLDivElement>(null)
   
   const scrollToSlide = (slideIndex: number) => {
@@ -20,7 +20,7 @@ export function FeaturedCarousel({ events }: FeaturedCarouselProps) {
     setIsAnimating(true)
     setCurrentSlide(slideIndex)
     
-    const slideWidth = slideRef.current.offsetWidth
+    const slideWidth = slideRef.current.clientWidth
     slideRef.current.scrollTo({
       left: slideWidth * slideIndex,
       behavior: 'smooth'
@@ -49,6 +49,10 @@ export function FeaturedCarousel({ events }: FeaturedCarouselProps) {
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSlide])
+
+  if (!events || events.length === 0) {
+    return <div className="text-center py-8">No trending events available</div>
+  }
   
   return (
     <div className="relative">
@@ -57,23 +61,16 @@ export function FeaturedCarousel({ events }: FeaturedCarouselProps) {
         className="overflow-hidden relative"
         ref={slideRef}
       >
-        <div 
-          className="flex transition-all duration-500"
-          style={{
-            width: `${(maxSlide + 1) * 100}%`,
-            transform: `translateX(-${currentSlide * (100 / (maxSlide + 1))}%)`,
-          }}
-        >
+        <div className="flex">
           {Array.from({ length: maxSlide + 1 }).map((_, slideIndex) => (
             <div 
               key={slideIndex}
-              className="w-full flex flex-wrap gap-6 px-4"
+              className="min-w-full flex flex-wrap justify-center gap-6 px-4"
+              style={{ flexShrink: 0 }}
             >
               {events.slice(slideIndex * 3, slideIndex * 3 + 3).map((event) => (
-                <div key={event.id} className="w-full md:w-[calc(33.333%-1rem)] card-3d">
-                  <div className="card-3d-content">
-                    <EventCard {...event} />
-                  </div>
+                <div key={event.id} className="w-full sm:w-[calc(50%-1rem)] md:w-[calc(33.333%-1rem)] max-w-md">
+                  <EventCard {...event} className="h-full" />
                 </div>
               ))}
             </div>
@@ -103,7 +100,7 @@ export function FeaturedCarousel({ events }: FeaturedCarouselProps) {
       </Button>
       
       {/* Dots Indicator */}
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-center mt-6">
         {Array.from({ length: maxSlide + 1 }).map((_, index) => (
           <button
             key={index}

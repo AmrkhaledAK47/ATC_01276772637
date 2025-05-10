@@ -1,12 +1,14 @@
 
 import { useState } from "react"
-import { Calendar, Music, Video, Users, BookOpen, Trophy, HeartHandshake, Paintbrush } from "lucide-react"
+import { Link } from "react-router-dom"
+import { Calendar, Music, Users, BookOpen, Trophy, HeartHandshake, Paintbrush, Video } from "lucide-react"
 import { motion } from "framer-motion"
 
 interface Category {
   id: string
   name: string
   icon: React.ReactNode
+  href: string
 }
 
 interface CategoryFilterProps {
@@ -16,19 +18,19 @@ interface CategoryFilterProps {
 
 export function CategoryFilter({ onSelect, selectedCategory }: CategoryFilterProps) {
   const categories: Category[] = [
-    { id: "all", name: "All Events", icon: <Calendar className="h-5 w-5" /> },
-    { id: "music", name: "Music", icon: <Music className="h-5 w-5" /> },
-    { id: "conference", name: "Conferences", icon: <Users className="h-5 w-5" /> },
-    { id: "workshop", name: "Workshops", icon: <BookOpen className="h-5 w-5" /> },
-    { id: "sports", name: "Sports", icon: <Trophy className="h-5 w-5" /> },
-    { id: "charity", name: "Charity", icon: <HeartHandshake className="h-5 w-5" /> },
-    { id: "arts", name: "Arts", icon: <Paintbrush className="h-5 w-5" /> },
-    { id: "entertainment", name: "Entertainment", icon: <Video className="h-5 w-5" /> },
+    { id: "all", name: "All Events", icon: <Calendar className="h-5 w-5" />, href: "/events" },
+    { id: "music", name: "Music", icon: <Music className="h-5 w-5" />, href: "/category/music" },
+    { id: "conference", name: "Conferences", icon: <Users className="h-5 w-5" />, href: "/category/conference" },
+    { id: "workshop", name: "Workshops", icon: <BookOpen className="h-5 w-5" />, href: "/category/workshop" },
+    { id: "sports", name: "Sports", icon: <Trophy className="h-5 w-5" />, href: "/category/sports" },
+    { id: "charity", name: "Charity", icon: <HeartHandshake className="h-5 w-5" />, href: "/category/charity" },
+    { id: "arts", name: "Arts", icon: <Paintbrush className="h-5 w-5" />, href: "/category/arts" },
+    { id: "entertainment", name: "Entertainment", icon: <Video className="h-5 w-5" />, href: "/category/entertainment" },
   ]
 
   return (
     <div className="overflow-x-auto pb-2 -mx-4 px-4">
-      <div className="flex gap-3 min-w-max">
+      <div className="flex gap-3 min-w-max pb-2">
         {categories.map((category) => (
           <button
             key={category.id}
