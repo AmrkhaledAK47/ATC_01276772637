@@ -1,9 +1,8 @@
 
 import * as React from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/ui/mode-toggle"
-import { Logo } from "@/components/ui/logo"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -21,30 +20,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { Menu, User } from "lucide-react"
-import { useAuth } from "@/hooks/useAuth"
-import { toast } from "@/hooks/use-toast"
+import { Calendar, Menu, User } from "lucide-react"
 
 export function Header() {
   // State to track if the mobile menu is open
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
-  const { user, logout, isAdmin } = useAuth()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of your account."
-    })
-    navigate('/')
-  }
+  // Demo state to track if user is logged in
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false)
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Logo size="md" />
+        <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center space-x-2">
+            <Calendar className="h-6 w-6 text-primary" />
+            <span className="font-heading font-bold text-xl">EventHub</span>
+          </Link>
+        </div>
         
         {/* Desktop Navigation */}
         <NavigationMenu className="hidden md:flex">
@@ -79,24 +72,6 @@ export function Header() {
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
-            {user && (
-              <NavigationMenuItem>
-                <Link to="/user/dashboard">
-                  <NavigationMenuLink className="px-4 py-2 hover:text-primary">
-                    My Bookings
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-            )}
-            {isAdmin && (
-              <NavigationMenuItem>
-                <Link to="/admin">
-                  <NavigationMenuLink className="px-4 py-2 hover:text-primary">
-                    Admin
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-            )}
           </NavigationMenuList>
         </NavigationMenu>
         
@@ -104,7 +79,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <ModeToggle />
           
-          {user ? (
+          {isLoggedIn ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -115,23 +90,21 @@ export function Header() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/user/dashboard')}>My Bookings</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/user/profile')}>Profile</DropdownMenuItem>
-                {isAdmin && (
-                  <DropdownMenuItem onClick={() => navigate('/admin')}>Admin Dashboard</DropdownMenuItem>
-                )}
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>My Bookings</DropdownMenuItem>
+                <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="hidden md:flex gap-2">
-              <Button variant="ghost" onClick={() => navigate('/auth?mode=login')}>
+              <Button variant="ghost" onClick={() => setIsLoggedIn(true)}>
                 Login
               </Button>
-              <Button variant="default" onClick={() => navigate('/auth?mode=register')}>
+              <Button variant="default" onClick={() => setIsLoggedIn(true)}>
                 Sign up
               </Button>
             </div>
@@ -184,45 +157,16 @@ export function Header() {
               All Events
             </Link>
             
-            {user ? (
-              <>
-                <Link 
-                  to="/user/dashboard" 
-                  className="block px-2 py-2 hover:bg-accent/50 rounded-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  My Bookings
-                </Link>
-                {isAdmin && (
-                  <Link 
-                    to="/admin" 
-                    className="block px-2 py-2 hover:bg-accent/50 rounded-md"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Admin Dashboard
-                  </Link>
-                )}
-                <Button 
-                  variant="outline" 
-                  className="w-full mt-2"
-                  onClick={() => {
-                    handleLogout();
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  Log out
-                </Button>
-              </>
-            ) : (
+            {!isLoggedIn && (
               <div className="grid grid-cols-2 gap-2 pt-2 border-t">
                 <Button variant="outline" onClick={() => {
-                  navigate('/auth?mode=login');
+                  setIsLoggedIn(true);
                   setMobileMenuOpen(false);
                 }}>
                   Login
                 </Button>
                 <Button variant="default" onClick={() => {
-                  navigate('/auth?mode=register');
+                  setIsLoggedIn(true);
                   setMobileMenuOpen(false);
                 }}>
                   Sign up

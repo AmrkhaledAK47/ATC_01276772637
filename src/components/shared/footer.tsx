@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom"
-import { Logo } from "@/components/ui/logo"
+import { Calendar } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 
 export function Footer() {
@@ -10,7 +10,10 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {/* Logo and description */}
           <div className="md:col-span-1 lg:col-span-1">
-            <Logo className="mb-4" />
+            <Link to="/" className="flex items-center space-x-2 mb-4">
+              <Calendar className="h-6 w-6 text-primary" />
+              <span className="font-heading font-bold text-xl">EventHub</span>
+            </Link>
             <p className="text-muted-foreground mb-4 max-w-xs">
               Discover and book amazing events in your area. Find concerts, conferences, workshops and more.
             </p>

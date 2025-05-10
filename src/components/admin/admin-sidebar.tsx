@@ -13,8 +13,6 @@ import {
   X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Logo } from "@/components/ui/logo"
-import { useAuth } from "@/hooks/useAuth"
 
 interface SidebarLinkProps {
   to: string
@@ -41,7 +39,6 @@ const SidebarLink = ({ to, icon, label, isActive }: SidebarLinkProps) => (
 export function AdminSidebar() {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
-  const { logout } = useAuth();
   
   // Handle responsive behavior for mobile
   React.useEffect(() => {
@@ -81,7 +78,8 @@ export function AdminSidebar() {
       >
         {/* Logo */}
         <div className="h-16 flex items-center gap-2 border-b px-4">
-          <Logo size="sm" showText={true} />
+          <Calendar className="h-6 w-6 text-primary" />
+          <span className="font-heading font-bold text-xl">EventHub</span>
           <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded ml-1">
             Admin
           </span>
@@ -126,7 +124,6 @@ export function AdminSidebar() {
           <Button
             variant="ghost"
             className="w-full justify-start text-destructive hover:text-destructive"
-            onClick={() => logout()}
           >
             <LogOut className="h-4 w-4 mr-2" />
             Logout
