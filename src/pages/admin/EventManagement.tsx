@@ -18,19 +18,25 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { BadgeStatus } from "@/components/ui/badge-status"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { Search, MoreHorizontal, Plus, Filter, Download } from "lucide-react"
+import { useEvents } from "@/context/EventContext"
+import { useToast } from "@/components/ui/use-toast"
 
 const EventManagement = () => {
+  const { events, deleteEvent } = useEvents()
+  const { toast } = useToast()
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const eventsPerPage = 10
   
   // Filter events based on search query
   const filteredEvents = events.filter(event => 
-    event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    event.venue.toLowerCase().includes(searchQuery.toLowerCase())
+    event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    event.venue.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    event.category.toLowerCase().includes(searchQuery.toLowerCase())
   )
   
   // Calculate pagination
@@ -38,6 +44,16 @@ const EventManagement = () => {
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage
   const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent)
   const totalPages = Math.ceil(filteredEvents.length / eventsPerPage)
+  
+  const handleDeleteEvent = (id: string, title: string) => {
+    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+      deleteEvent(id)
+      toast({
+        title: "Event deleted",
+        description: `"${title}" has been successfully deleted.`,
+      })
+    }
+  }
   
   return (
     <AdminLayout>
@@ -93,22 +109,30 @@ const EventManagement = () => {
             {currentEvents.length > 0 ? (
               currentEvents.map(event => (
                 <TableRow key={event.id} className="hover:bg-muted/50">
-                  <TableCell className="font-medium">{event.name}</TableCell>
-                  <TableCell>{format(event.date, "MMM dd, yyyy")}</TableCell>
+                  <TableCell className="font-medium">{event.title}</TableCell>
+                  <TableCell>{format(new Date(event.date), "MMM dd, yyyy")}</TableCell>
                   <TableCell>{event.time}</TableCell>
                   <TableCell>{event.venue}</TableCell>
-                  <TableCell>${event.price.toFixed(2)}</TableCell>
+                  <TableCell>${typeof event.price === 'number' ? event.price.toFixed(2) : event.price}</TableCell>
                   <TableCell>
                     <BadgeStatus
                       variant={
-                        event.status === "published" 
-                          ? "success" 
-                          : event.status === "draft" 
-                          ? "default"
-                          : "warning"
+                        event.status === "available" 
+                          ? "secondary" 
+                          : event.status === "free" 
+                          ? "success"
+                          : event.status === "few-tickets" 
+                          ? "warning"
+                          : "destructive"
                       }
                     >
-                      {event.status}
+                      {event.status === "available" 
+                        ? "Available" 
+                        : event.status === "free" 
+                        ? "Free" 
+                        : event.status === "few-tickets" 
+                        ? "Few tickets" 
+                        : "Sold out"}
                     </BadgeStatus>
                   </TableCell>
                   <TableCell className="text-right">
@@ -125,7 +149,10 @@ const EventManagement = () => {
                         <DropdownMenuItem asChild>
                           <Link to={`/admin/events/edit/${event.id}`}>Edit</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem 
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => handleDeleteEvent(event.id, event.title)}
+                        >
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -136,7 +163,9 @@ const EventManagement = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="text-center h-24">
-                  No events found
+                  {filteredEvents.length === 0 && searchQuery 
+                    ? "No events found matching your search" 
+                    : "No events found. Create your first event!"}
                 </TableCell>
               </TableRow>
             )}
@@ -173,81 +202,5 @@ const EventManagement = () => {
     </AdminLayout>
   )
 }
-
-// Mock data
-const events = [
-  {
-    id: "1",
-    name: "Tech Conference 2025",
-    date: new Date(2025, 5, 15),
-    time: "9:00 AM - 5:00 PM",
-    venue: "Downtown Convention Center",
-    price: 199,
-    status: "published",
-  },
-  {
-    id: "2",
-    name: "Summer Music Festival",
-    date: new Date(2025, 7, 5),
-    time: "12:00 PM - 11:00 PM",
-    venue: "Riverside Park",
-    price: 89,
-    status: "published",
-  },
-  {
-    id: "3",
-    name: "Digital Marketing Workshop",
-    date: new Date(2025, 4, 22),
-    time: "10:00 AM - 3:00 PM",
-    venue: "Business Hub",
-    price: 49,
-    status: "draft",
-  },
-  {
-    id: "4",
-    name: "Charity Run for Education",
-    date: new Date(2025, 3, 10),
-    time: "7:00 AM",
-    venue: "City Park",
-    price: 25,
-    status: "published",
-  },
-  {
-    id: "5",
-    name: "Art Exhibition: Future Perspectives",
-    date: new Date(2025, 5, 1),
-    time: "10:00 AM - 6:00 PM",
-    venue: "Modern Art Gallery",
-    price: 0,
-    status: "published",
-  },
-  {
-    id: "6",
-    name: "Comedy Night",
-    date: new Date(2025, 2, 25),
-    time: "8:00 PM",
-    venue: "Laugh Factory",
-    price: 35,
-    status: "cancelled",
-  },
-  {
-    id: "7",
-    name: "Charity Gala Dinner",
-    date: new Date(2025, 6, 12),
-    time: "7:00 PM - 11:00 PM",
-    venue: "Grand Ballroom",
-    price: 150,
-    status: "published",
-  },
-  {
-    id: "8",
-    name: "Film Festival Opening",
-    date: new Date(2025, 9, 5),
-    time: "6:00 PM - 10:00 PM",
-    venue: "Cinema Plaza",
-    price: 50,
-    status: "published",
-  },
-]
 
 export default EventManagement

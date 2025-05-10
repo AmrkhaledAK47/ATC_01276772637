@@ -7,6 +7,8 @@ import { Calendar, Clock, MapPin, Star, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { motion } from "framer-motion"
+import { useEvents } from "@/context/EventContext"
+import { useAuth } from "@/context/AuthContext"
 
 export interface EventCardProps {
   id: string
@@ -37,6 +39,10 @@ export function EventCard({
 }: EventCardProps) {
   const [isHovered, setIsHovered] = React.useState(false)
   const [isFavorite, setIsFavorite] = React.useState(false)
+  const { hasUserBookedEvent } = useEvents()
+  const { isAuthenticated } = useAuth()
+  
+  const isBooked = hasUserBookedEvent(id)
   
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -69,25 +75,31 @@ export function EventCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-70" />
         
         <div className="absolute top-2 left-2">
-          <BadgeStatus 
-            variant={
-              status === "free" 
-                ? "success" 
+          {isBooked ? (
+            <BadgeStatus variant="success">
+              Booked
+            </BadgeStatus>
+          ) : (
+            <BadgeStatus 
+              variant={
+                status === "free" 
+                  ? "success" 
+                  : status === "few-tickets" 
+                  ? "warning" 
+                  : status === "sold-out" 
+                  ? "destructive"
+                  : "secondary"
+              }
+            >
+              {status === "available" 
+                ? "Available" 
                 : status === "few-tickets" 
-                ? "warning" 
+                ? "Few tickets left" 
                 : status === "sold-out" 
-                ? "destructive"
-                : "secondary"
-            }
-          >
-            {status === "available" 
-              ? "Available" 
-              : status === "few-tickets" 
-              ? "Few tickets left" 
-              : status === "sold-out" 
-              ? "Sold out"
-              : "Free"}
-          </BadgeStatus>
+                ? "Sold out"
+                : "Free"}
+            </BadgeStatus>
+          )}
         </div>
         
         <button
@@ -150,13 +162,25 @@ export function EventCard({
             </p>
           </div>
           
-          <Link to={`/events/${id}`}>
+          {isBooked ? (
             <Button 
-              className="shadow-sm hover:shadow-glow-accent transition-shadow"
+              variant="outline"
+              className="border-success text-success hover:bg-success/10"
+              asChild
             >
-              View Details
+              <Link to={`/user/dashboard`}>
+                View Booking
+              </Link>
             </Button>
-          </Link>
+          ) : (
+            <Link to={`/events/${id}`}>
+              <Button 
+                className="shadow-sm hover:shadow-glow-accent transition-shadow"
+              >
+                View Details
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </motion.div>

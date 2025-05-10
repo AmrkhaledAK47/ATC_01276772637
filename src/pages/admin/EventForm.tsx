@@ -1,5 +1,5 @@
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { AdminLayout } from "@/layouts/admin-layout"
 import { Button } from "@/components/ui/button"
@@ -7,41 +7,112 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
-import { CalendarIcon, ImagePlus } from "lucide-react"
+import { CalendarIcon, ImagePlus, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useEvents } from "@/context/EventContext"
+import { useToast } from "@/components/ui/use-toast"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const EventForm = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { getEvent, addEvent, updateEvent, events } = useEvents()
+  const { toast } = useToast()
   const isEditMode = !!id
   
-  // Find event if in edit mode
-  const eventToEdit = isEditMode ? events.find(event => event.id === id) : null
-  
   // Form state
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [eventData, setEventData] = useState({
-    name: eventToEdit?.name || "",
-    description: eventToEdit?.description || "",
-    category: eventToEdit?.category || "Conference",
-    date: eventToEdit?.date || new Date(),
-    time: eventToEdit?.time || "",
-    venue: eventToEdit?.venue || "",
-    price: eventToEdit?.price || 0,
-    imageUrl: eventToEdit?.imageUrl || "",
-    status: eventToEdit?.status || "draft"
+    title: "",
+    description: "",
+    category: "Conference",
+    date: new Date(),
+    time: "",
+    venue: "",
+    price: 0,
+    imageUrl: "",
+    status: "available",
+    featured: false
   })
+  
+  // Load event data if in edit mode
+  useEffect(() => {
+    if (isEditMode && id) {
+      const event = getEvent(id)
+      if (event) {
+        setEventData({
+          title: event.title,
+          description: event.description,
+          category: event.category,
+          date: new Date(event.date),
+          time: event.time,
+          venue: event.venue,
+          price: event.price,
+          imageUrl: event.imageUrl,
+          status: event.status,
+          featured: event.featured || false
+        })
+      }
+    }
+  }, [isEditMode, id, getEvent])
+  
+  // Sample image options
+  const sampleImages = [
+    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1531058020387-3be344556be6?q=80&w=2070&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=2070&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1551818255-e6e10975bc17?q=80&w=2070&auto=format&fit=crop",
+  ]
   
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Here would be the API call to save the event
-    console.log("Event data:", eventData)
+    setIsSubmitting(true)
     
-    // Redirect back to event management
-    navigate("/admin/events")
+    try {
+      // Additional validation
+      if (!eventData.title) throw new Error("Event title is required")
+      if (!eventData.description) throw new Error("Event description is required")
+      if (!eventData.venue) throw new Error("Event venue is required")
+      if (!eventData.time) throw new Error("Event time is required")
+      if (!eventData.imageUrl) throw new Error("Event image is required")
+      
+      if (isEditMode && id) {
+        // Update existing event
+        updateEvent(id, eventData)
+        toast({
+          title: "Event updated",
+          description: `"${eventData.title}" has been successfully updated.`,
+        })
+      } else {
+        // Create new event
+        addEvent(eventData)
+        toast({
+          title: "Event created",
+          description: `"${eventData.title}" has been successfully created.`,
+        })
+      }
+      
+      // Redirect back to event management
+      navigate("/admin/events")
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "An error occurred. Please try again.",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+  
+  const handleSelectSampleImage = (url: string) => {
+    setEventData({...eventData, imageUrl: url})
   }
   
   return (
@@ -63,11 +134,11 @@ const EventForm = () => {
           <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
           
           <div className="space-y-2">
-            <Label htmlFor="name">Event Name</Label>
+            <Label htmlFor="title">Event Name</Label>
             <Input 
-              id="name"
-              value={eventData.name}
-              onChange={(e) => setEventData({...eventData, name: e.target.value})}
+              id="title"
+              value={eventData.title}
+              onChange={(e) => setEventData({...eventData, title: e.target.value})}
               placeholder="Enter event name"
               required
               className="max-w-2xl"
@@ -112,17 +183,35 @@ const EventForm = () => {
               <Label htmlFor="status">Status</Label>
               <Select 
                 value={eventData.status}
-                onValueChange={(value) => setEventData({...eventData, status: value})}
+                onValueChange={(value: "available" | "sold-out" | "few-tickets" | "free") => setEventData({...eventData, status: value})}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="few-tickets">Few Tickets Left</SelectItem>
+                  <SelectItem value="sold-out">Sold Out</SelectItem>
+                  <SelectItem value="free">Free Event</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          
+          <div className="flex items-center space-x-2 pt-2">
+            <Checkbox 
+              id="featured" 
+              checked={eventData.featured}
+              onCheckedChange={(checked) => 
+                setEventData({...eventData, featured: checked === true})
+              }
+            />
+            <label
+              htmlFor="featured"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Feature this event on homepage
+            </label>
           </div>
         </div>
         
@@ -144,7 +233,7 @@ const EventForm = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <Calendar
+                  <CalendarComponent
                     mode="single"
                     selected={eventData.date}
                     onSelect={(date) => date && setEventData({...eventData, date})}
@@ -204,11 +293,11 @@ const EventForm = () => {
             <Label htmlFor="image">Event Image</Label>
             <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
               {eventData.imageUrl ? (
-                <div className="relative aspect-video max-w-md mx-auto">
+                <div className="relative max-w-md mx-auto">
                   <img 
                     src={eventData.imageUrl} 
                     alt="Event preview" 
-                    className="rounded-md object-cover w-full h-full"
+                    className="rounded-md object-cover w-full aspect-video"
                   />
                   <Button 
                     type="button"
@@ -223,19 +312,21 @@ const EventForm = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center">
                   <ImagePlus className="h-10 w-10 text-muted-foreground/70 mb-2" />
-                  <p className="text-muted-foreground mb-1">Drag & drop an image here or click to browse</p>
-                  <p className="text-xs text-muted-foreground">Recommended size: 1200 x 600 pixels</p>
-                  <Button 
-                    type="button" 
-                    variant="secondary" 
-                    className="mt-4"
-                    onClick={() => setEventData({
-                      ...eventData, 
-                      imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop"
-                    })}
-                  >
-                    Select Image
-                  </Button>
+                  <p className="text-muted-foreground mb-1">Select an image for your event</p>
+                  <p className="text-xs text-muted-foreground mb-4">Recommended size: 1200 x 600 pixels</p>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mt-4">
+                    {sampleImages.map((url, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className="aspect-video rounded-md overflow-hidden border hover:border-primary hover:ring-2 hover:ring-primary/20 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
+                        onClick={() => handleSelectSampleImage(url)}
+                      >
+                        <img src={url} alt={`Sample ${index + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -248,58 +339,40 @@ const EventForm = () => {
             type="button" 
             variant="outline" 
             onClick={() => navigate("/admin/events")}
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
           
-          {isEditMode && (
+          {isEditMode && id && (
             <Button
               type="button"
               variant="destructive"
               onClick={() => {
-                // Here would be the delete API call
-                navigate("/admin/events")
+                if (window.confirm(`Are you sure you want to delete "${eventData.title}"?`)) {
+                  navigate("/admin/events")
+                }
               }}
+              disabled={isSubmitting}
             >
               Delete Event
             </Button>
           )}
           
-          <Button type="submit">
-            {isEditMode ? "Update Event" : "Create Event"}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isEditMode ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              <>{isEditMode ? "Update Event" : "Create Event"}</>
+            )}
           </Button>
         </div>
       </form>
     </AdminLayout>
   )
 }
-
-// Mock data
-const events = [
-  {
-    id: "1",
-    name: "Tech Conference 2025",
-    description: "Join the biggest tech conference in the city with renowned speakers and networking opportunities.",
-    category: "Conference",
-    date: new Date(2025, 5, 15),
-    time: "9:00 AM - 5:00 PM",
-    venue: "Downtown Convention Center",
-    price: 199,
-    imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
-    status: "published",
-  },
-  {
-    id: "2",
-    name: "Summer Music Festival",
-    description: "A weekend of amazing performances by top artists across multiple genres.",
-    category: "Music",
-    date: new Date(2025, 7, 5),
-    time: "12:00 PM - 11:00 PM",
-    venue: "Riverside Park",
-    price: 89,
-    imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop",
-    status: "published",
-  },
-]
 
 export default EventForm

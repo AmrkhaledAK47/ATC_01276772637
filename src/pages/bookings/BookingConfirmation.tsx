@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import { MainLayout } from "@/layouts/main-layout"
 import { Button } from "@/components/ui/button"
@@ -9,422 +9,336 @@ import confetti from "canvas-confetti"
 import { format, add } from "date-fns"
 import { CalendarDays, Clock, MapPin, Share2, Download, Mail, Calendar, Phone, User, Users, CreditCard, CheckCircle2, Printer, QrCode } from "lucide-react"
 import { motion } from "framer-motion"
+import { useEvents } from "@/context/EventContext"
+import { useAuth } from "@/context/AuthContext"
 
 const BookingConfirmation = () => {
   const { id } = useParams<{ id: string }>()
-  const booking = bookings.find(b => b.id === id)
-  const [activeTab, setActiveTab] = useState("ticket")
-  const [showQR, setShowQR] = useState(false)
+  const { bookings, events } = useEvents()
+  const { user } = useAuth()
+  const [booking, setBooking] = useState<any>(null)
+  const [event, setEvent] = useState<any>(null)
   
-  // Trigger confetti effect
   useEffect(() => {
-    // Only trigger on initial render
-    const timer = setTimeout(() => {
+    // Find booking and event
+    const bookingData = bookings.find(b => b.id === id)
+    
+    if (bookingData) {
+      setBooking(bookingData)
+      const eventData = events.find(e => e.id === bookingData.eventId)
+      if (eventData) {
+        setEvent(eventData)
+      }
+    }
+    
+    // Trigger confetti animation
+    const triggerConfetti = () => {
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
       })
-    }, 500)
+    }
     
-    return () => clearTimeout(timer)
-  }, [])
+    triggerConfetti()
+    const confettiInterval = setInterval(triggerConfetti, 3000)
+    
+    return () => clearInterval(confettiInterval)
+  }, [id, bookings, events])
   
-  if (!booking) {
+  if (!booking || !event) {
     return (
       <MainLayout>
-        <div className="container py-20 text-center">
-          <h1 className="text-3xl font-bold mb-4">Booking Not Found</h1>
-          <p className="mb-8 text-muted-foreground">
-            We couldn't find the booking you're looking for.
-          </p>
-          <Button asChild>
-            <Link to="/user/dashboard">Back to Dashboard</Link>
-          </Button>
+        <div className="container py-16">
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <h1 className="text-3xl font-bold mb-4">Booking Not Found</h1>
+            <p className="text-muted-foreground mb-8">The booking confirmation you're looking for doesn't exist or has been removed.</p>
+            <Button asChild>
+              <Link to="/user/dashboard">Go to Dashboard</Link>
+            </Button>
+          </div>
         </div>
       </MainLayout>
-    )
+    );
   }
+  
+  // Calculate ticket valid until date (1 day after event)
+  const validUntilDate = add(new Date(event.date), { days: 1 })
   
   return (
     <MainLayout>
       <div className="container py-12">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-3xl mx-auto"
-        >
-          {/* Success Message */}
-          <div className="text-center mb-10">
+        {/* Success Animation */}
+        <div className="flex flex-col items-center mb-12">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ 
+              type: "spring",
+              stiffness: 260,
+              damping: 20,
+              delay: 0.2
+            }}
+            className="w-24 h-24 bg-success/20 rounded-full flex items-center justify-center mb-6"
+          >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ 
-                type: "spring",
-                stiffness: 260,
-                damping: 20,
-                delay: 0.2
-              }}
-              className="bg-secondary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-            >
-              <CheckCircle2 className="h-12 w-12 text-secondary" />
-            </motion.div>
-            <motion.h1 
-              className="text-3xl font-bold mb-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              Booking Confirmed!
-            </motion.h1>
-            <motion.p 
-              className="text-muted-foreground mb-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              Your tickets for {booking.event.name} have been confirmed.
-            </motion.p>
-            <motion.p 
-              className="text-sm text-muted-foreground"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              Booking Reference: <span className="font-mono font-medium">{booking.id}</span>
-            </motion.p>
-          </div>
+              <CheckCircle2 className="h-14 w-14 text-success" />
+            </motion.div>
+          </motion.div>
           
-          {/* Ticket and Details Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full bg-card/50 backdrop-blur">
-              <TabsTrigger value="ticket" className="flex-1">Ticket</TabsTrigger>
-              <TabsTrigger value="details" className="flex-1">Details</TabsTrigger>
-              <TabsTrigger value="venue" className="flex-1">Venue</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="ticket">
-              <Card className="overflow-hidden border-2 border-secondary/10">
-                <div className="bg-gradient-to-r from-primary to-secondary text-white p-4">
-                  <h3 className="font-bold text-lg">E-TICKET</h3>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="text-3xl font-bold text-center mb-2"
+          >
+            Booking Confirmed!
+          </motion.h1>
+          
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+            className="text-muted-foreground text-center max-w-lg"
+          >
+            Your booking for <span className="font-medium text-foreground">{event.title}</span> has been confirmed. 
+            We've sent the details to your email address.
+          </motion.p>
+        </div>
+        
+        {/* Ticket and Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          <div className="lg:col-span-2">
+            {/* Digital Ticket */}
+            <Card className="overflow-hidden mb-6">
+              <div className="relative bg-primary text-primary-foreground p-6">
+                <div className="absolute top-0 right-0 p-4 flex gap-2">
+                  <Button variant="outline" size="icon" className="bg-background/20 hover:bg-background/40 backdrop-blur">
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="bg-background/20 hover:bg-background/40 backdrop-blur">
+                    <Download className="h-4 w-4" />
+                  </Button>
                 </div>
-                <CardContent className="p-0">
-                  <div className="relative overflow-hidden">
-                    {/* Banner Image */}
-                    <div className="h-40 relative">
-                      <img 
-                        src={booking.event.imageUrl} 
-                        alt={booking.event.name} 
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
+                <h2 className="text-2xl font-bold mb-1">Digital Ticket</h2>
+                <p className="opacity-80 text-sm">#{booking.id.slice(-6).toUpperCase()}</p>
+              </div>
+              
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* QR Code */}
+                  <div className="md:w-1/3 flex flex-col items-center">
+                    <div className="bg-white p-4 rounded-lg">
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.1 }}
+                        className="aspect-square bg-muted relative overflow-hidden flex items-center justify-center"
+                        style={{ width: 150 }}
+                      >
+                        <QrCode className="h-20 w-20 text-primary absolute opacity-10" />
+                        <div className="text-xs text-center">
+                          <p className="font-medium">QR Code</p>
+                          <p>#{booking.id.slice(-10).toUpperCase()}</p>
+                        </div>
+                      </motion.div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                      Present this QR code at the venue
+                    </p>
+                  </div>
+                  
+                  {/* Event Details */}
+                  <div className="md:w-2/3">
+                    <h3 className="text-xl font-bold mb-4">{event.title}</h3>
+                    
+                    <div className="space-y-4 text-sm">
+                      <div className="flex gap-3">
+                        <CalendarDays className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Date & Time</p>
+                          <p className="text-muted-foreground">
+                            {format(new Date(event.date), "EEEE, MMMM d, yyyy")}
+                          </p>
+                          <p className="text-muted-foreground">{event.time}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Location</p>
+                          <p className="text-muted-foreground">{event.venue}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <Users className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Tickets</p>
+                          <p className="text-muted-foreground">
+                            {booking.quantity} × {event.category} Ticket
+                            {booking.quantity > 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <User className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Attendee</p>
+                          <p className="text-muted-foreground">{user?.name}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 pt-6 border-t text-sm">
+                  <div className="flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                      <p className="font-medium">Order Total</p>
+                      <p className="text-lg font-bold">
+                        ${(event.price * booking.quantity).toFixed(2)}
+                      </p>
                     </div>
                     
-                    {/* Ticket Content */}
-                    <div className="p-6 space-y-4">
-                      <h2 className="text-2xl font-bold">{booking.event.name}</h2>
-                      
-                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center">
-                          <CalendarDays className="h-4 w-4 mr-2 text-primary" />
-                          {format(booking.event.date, "EEEE, MMMM dd, yyyy")}
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-2 text-primary" />
-                          {booking.event.time}
-                        </div>
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2 text-primary" />
-                          {booking.event.venue}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-4">
-                        <div>
-                          <div className="text-sm text-muted-foreground">Attendee</div>
-                          <div className="font-medium">{booking.attendee}</div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Tickets</div>
-                          <div className="font-medium">{booking.ticketCount}</div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Type</div>
-                          <div className="font-medium">{booking.ticketType}</div>
-                        </div>
-                      </div>
-                      
-                      {/* QR Code */}
-                      <div className="flex justify-center py-4" onClick={() => setShowQR(!showQR)}>
-                        {showQR ? (
-                          <img 
-                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=eventticket:123456789" 
-                            alt="QR Code" 
-                            className="h-48 w-48"
-                          />
-                        ) : (
-                          <Button variant="outline" className="gap-2">
-                            <QrCode className="h-4 w-4" /> Show QR Code
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <div className="border-t border-dashed border-muted-foreground/25 pt-4 text-center text-xs text-muted-foreground">
-                        Please present this ticket or QR code at the entrance.
-                      </div>
+                    <div className="flex gap-3">
+                      <Button variant="outline" className="gap-2">
+                        <Printer className="h-4 w-4" /> Print
+                      </Button>
+                      <Button variant="default" className="gap-2">
+                        <Calendar className="h-4 w-4" /> Add to Calendar
+                      </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Additional Information */}
+            <Tabs defaultValue="details">
+              <TabsList>
+                <TabsTrigger value="details">Event Details</TabsTrigger>
+                <TabsTrigger value="instructions">Instructions</TabsTrigger>
+              </TabsList>
               
-              {/* Actions */}
-              <div className="flex justify-center gap-4 mt-6">
-                <Button variant="outline" className="gap-2">
-                  <Printer className="h-4 w-4" /> Print
-                </Button>
-                <Button variant="outline" className="gap-2">
-                  <Download className="h-4 w-4" /> Download
-                </Button>
-                <Button variant="outline" className="gap-2">
-                  <Mail className="h-4 w-4" /> Email
-                </Button>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="details">
-              <Card>
-                <CardContent className="p-6 space-y-6">
-                  {/* Order Summary */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          {booking.ticketType} x {booking.ticketCount}
-                        </span>
-                        <span>${booking.subtotal.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Service Fee</span>
-                        <span>${booking.serviceFee.toFixed(2)}</span>
-                      </div>
-                      {booking.discount > 0 && (
-                        <div className="flex justify-between text-secondary">
-                          <span>Discount</span>
-                          <span>-${booking.discount.toFixed(2)}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between font-medium pt-2 border-t">
-                        <span>Total</span>
-                        <span>${booking.total.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Payment Information */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Payment Information</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span>{booking.paymentMethod}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span>Date: {format(booking.purchaseDate, "MMMM dd, yyyy")}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Contact Information */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span>{booking.attendee}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span>{booking.email}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span>{booking.phone}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="venue">
-              <Card>
-                <CardContent className="p-6 space-y-6">
-                  {/* Venue Details */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Venue Information</h3>
-                    <div className="space-y-2">
-                      <div className="font-medium">{booking.event.venue}</div>
-                      <div className="text-muted-foreground">123 Event Street</div>
-                      <div className="text-muted-foreground">New York, NY 10001</div>
-                    </div>
-                  </div>
-                  
-                  {/* Map Placeholder */}
-                  <div className="aspect-video bg-muted rounded-md overflow-hidden relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <p className="text-muted-foreground">Map View</p>
-                    </div>
-                  </div>
-                  
-                  {/* Additional Info */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Getting There</h3>
-                    <div className="space-y-4 text-muted-foreground">
-                      <div>
-                        <div className="font-medium text-foreground">Parking</div>
-                        <p>Parking is available in the venue's underground garage for $15 per vehicle.</p>
-                      </div>
-                      <div>
-                        <div className="font-medium text-foreground">Public Transit</div>
-                        <p>The venue is accessible via the Blue Line, exit at Central Station and walk 5 minutes east.</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-          
-          {/* Add to Calendar */}
-          <div className="mt-8 text-center">
-            <h3 className="text-lg font-medium mb-3">Add to Calendar</h3>
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" size="sm">Google</Button>
-              <Button variant="outline" size="sm">iCal</Button>
-              <Button variant="outline" size="sm">Outlook</Button>
-            </div>
-          </div>
-          
-          {/* Share */}
-          <div className="mt-8 text-center">
-            <h3 className="text-lg font-medium mb-3">Share with Friends</h3>
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" size="icon">
-                <Users className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <Share2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          
-          {/* You Might Also Like */}
-          <div className="mt-12">
-            <h3 className="text-xl font-semibold mb-6 text-center">You Might Also Like</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {relatedEvents.map((event, index) => (
-                <Link 
-                  key={index} 
-                  to={`/events/${event.id}`}
-                  className="group flex bg-card hover:bg-card/80 border rounded-lg overflow-hidden transition-colors"
-                >
-                  <div className="w-1/3">
-                    <img 
-                      src={event.imageUrl} 
-                      alt={event.name} 
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="w-2/3 p-4">
-                    <h4 className="font-medium line-clamp-1">{event.name}</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-1">
-                      {format(event.date, "MMM dd")} • {event.venue}
+              <TabsContent value="details">
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold mb-4">About This Event</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {event.description}
                     </p>
-                    <p className="text-sm font-medium mt-1">${event.price}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                    
+                    <Button variant="link" asChild className="px-0">
+                      <Link to={`/events/${event.id}`}>View full event details</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="instructions">
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold mb-4">Important Information</h3>
+                    
+                    <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                      <li>Arrive 15-30 minutes before the event starts</li>
+                      <li>Have your ticket QR code ready for scanning</li>
+                      <li>This ticket is valid until {format(validUntilDate, "MMMM d, yyyy")}</li>
+                      <li>Photo ID may be required for entry</li>
+                      <li>No refunds or exchanges</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
           
-          {/* Back to Dashboard */}
-          <div className="mt-8 text-center">
-            <Button asChild>
-              <Link to="/user/dashboard">Back to Dashboard</Link>
-            </Button>
+          <div className="space-y-6">
+            {/* Contact Information */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-4">Need Help?</h3>
+                
+                <div className="space-y-4 text-sm">
+                  <div className="flex gap-3">
+                    <Mail className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Email</p>
+                      <p className="text-muted-foreground">support@eventhub.com</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <Phone className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Phone</p>
+                      <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button variant="outline" className="w-full mt-4">Contact Support</Button>
+              </CardContent>
+            </Card>
+            
+            {/* Order Information */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-4">Order Information</h3>
+                
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Order Number</span>
+                    <span>#{booking.id.slice(-8).toUpperCase()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Order Date</span>
+                    <span>{format(new Date(booking.date), "MMMM d, yyyy")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Payment Method</span>
+                    <span>Credit Card</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Status</span>
+                    <span className="text-success">Confirmed</span>
+                  </div>
+                </div>
+                
+                <div className="mt-4 pt-4 border-t">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>${(event.price * booking.quantity).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between font-medium mt-2">
+                    <span>Total</span>
+                    <span>${(event.price * booking.quantity).toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </motion.div>
+        </div>
+        
+        {/* Button Actions */}
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+          <Button asChild>
+            <Link to="/user/dashboard">View My Bookings</Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/events">Browse More Events</Link>
+          </Button>
+        </div>
       </div>
     </MainLayout>
   )
 }
-
-// Mock data
-const bookings = [
-  {
-    id: "BK12345",
-    event: {
-      name: "Tech Conference 2025",
-      date: new Date(2025, 5, 15),
-      time: "9:00 AM - 5:00 PM",
-      venue: "Downtown Convention Center",
-      imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
-    },
-    attendee: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    ticketCount: 2,
-    ticketType: "Standard",
-    purchaseDate: new Date(2025, 4, 10),
-    subtotal: 199.98,
-    serviceFee: 20.00,
-    discount: 0,
-    total: 219.98,
-    paymentMethod: "Visa •••• 4242",
-  },
-  {
-    id: "BK12346",
-    event: {
-      name: "Summer Music Festival",
-      date: new Date(2025, 7, 5),
-      time: "12:00 PM - 11:00 PM",
-      venue: "Riverside Park",
-      imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop",
-    },
-    attendee: "Jane Smith",
-    email: "jane.smith@example.com",
-    phone: "+1 (555) 987-6543",
-    ticketCount: 1,
-    ticketType: "VIP",
-    purchaseDate: new Date(2025, 6, 15),
-    subtotal: 149.99,
-    serviceFee: 15.00,
-    discount: 25.00,
-    total: 139.99,
-    paymentMethod: "Mastercard •••• 5678",
-  },
-]
-
-const relatedEvents = [
-  {
-    id: "3",
-    name: "Digital Marketing Workshop",
-    date: new Date(2025, 4, 22),
-    venue: "Business Hub",
-    price: 49,
-    imageUrl: "https://images.unsplash.com/photo-1551818255-e6e10975bc17?q=80&w=2073&auto=format&fit=crop",
-  },
-  {
-    id: "7",
-    name: "Charity Gala Dinner",
-    date: new Date(2025, 6, 12),
-    venue: "Grand Ballroom",
-    price: 150,
-    imageUrl: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-  },
-]
 
 export default BookingConfirmation

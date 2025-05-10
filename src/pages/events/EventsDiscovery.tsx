@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { MainLayout } from "@/layouts/main-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,19 +10,119 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Search, Filter, Grid3X3, List, MapPin, SlidersHorizontal, Calendar } from "lucide-react"
 import { motion } from "framer-motion"
-
-import { featuredEvents } from "../Index"
+import { useEvents } from "@/context/EventContext"
+import { addDays, isSameDay, isWithinInterval, startOfDay, endOfDay, addMonths } from "date-fns"
 
 const EventsDiscovery = () => {
+  const { events } = useEvents()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState("")
   const [view, setView] = useState("grid")
-  const [events, setEvents] = useState(featuredEvents)
+  const [filteredEvents, setFilteredEvents] = useState(events)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [timeFilter, setTimeFilter] = useState("all")
+  const [sortBy, setSortBy] = useState("date-asc")
+  
+  // Get category from URL if provided
+  const categoryFromUrl = searchParams.get("category")
+  
+  useEffect(() => {
+    let filtered = [...events]
+    
+    // Apply text search
+    if (searchQuery) {
+      filtered = filtered.filter(event =>
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.venue.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+    
+    // Apply category filter from URL
+    if (categoryFromUrl) {
+      filtered = filtered.filter(event => 
+        event.category.toLowerCase() === categoryFromUrl.toLowerCase()
+      )
+    }
+    
+    // Apply time filter
+    const today = new Date()
+    
+    switch (timeFilter) {
+      case "today":
+        filtered = filtered.filter(event => 
+          isSameDay(new Date(event.date), today)
+        )
+        break
+      case "weekend":
+        const saturday = addDays(today, (6 - today.getDay()) % 7)
+        const sunday = addDays(saturday, 1)
+        filtered = filtered.filter(event => 
+          isWithinInterval(new Date(event.date), {
+            start: startOfDay(saturday),
+            end: endOfDay(sunday)
+          })
+        )
+        break
+      case "week":
+        const nextWeek = addDays(today, 7)
+        filtered = filtered.filter(event => 
+          isWithinInterval(new Date(event.date), {
+            start: startOfDay(today),
+            end: endOfDay(nextWeek)
+          })
+        )
+        break
+      case "month":
+        const nextMonth = addMonths(today, 1)
+        filtered = filtered.filter(event => 
+          isWithinInterval(new Date(event.date), {
+            start: startOfDay(today),
+            end: endOfDay(nextMonth)
+          })
+        )
+        break
+      default:
+        // "all" - no additional filtering
+        break
+    }
+    
+    // Apply sorting
+    switch (sortBy) {
+      case "date-asc":
+        filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        break
+      case "date-desc":
+        filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        break
+      case "price-asc":
+        filtered.sort((a, b) => Number(a.price) - Number(b.price))
+        break
+      case "price-desc":
+        filtered.sort((a, b) => Number(b.price) - Number(a.price))
+        break
+      case "name-asc":
+        filtered.sort((a, b) => a.title.localeCompare(b.title))
+        break
+      case "name-desc":
+        filtered.sort((a, b) => b.title.localeCompare(a.title))
+        break
+      default:
+        break
+    }
+    
+    setFilteredEvents(filtered)
+  }, [events, searchQuery, timeFilter, sortBy, categoryFromUrl])
   
   return (
     <MainLayout>
       <div className="container py-12">
-        <h1 className="text-3xl font-bold mb-6">Discover Events</h1>
+        <h1 className="text-3xl font-bold mb-2">Discover Events</h1>
+        {categoryFromUrl && (
+          <p className="text-xl text-muted-foreground mb-4 capitalize">
+            Category: {categoryFromUrl}
+          </p>
+        )}
         
         {/* Search and Filter Bar */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -74,7 +174,7 @@ const EventsDiscovery = () => {
         
         {/* Categories and Sort */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between mb-8">
-          <Tabs defaultValue="all" className="w-full sm:w-auto">
+          <Tabs defaultValue="all" value={timeFilter} onValueChange={setTimeFilter} className="w-full sm:w-auto">
             <TabsList className="bg-muted/50">
               <TabsTrigger value="all">All Events</TabsTrigger>
               <TabsTrigger value="today">Today</TabsTrigger>
@@ -87,7 +187,7 @@ const EventsDiscovery = () => {
           <div className="flex gap-2 items-center">
             <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground mr-2">Sort by:</span>
-            <Select defaultValue="date-asc">
+            <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[180px] h-9">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -121,54 +221,108 @@ const EventsDiscovery = () => {
           {/* Events Grid */}
           <div className="lg:col-span-3">
             {view === "grid" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {events.map(event => (
-                  <EventCard key={event.id} {...event} />
-                ))}
-              </div>
+              <>
+                {filteredEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredEvents.map(event => (
+                      <EventCard 
+                        key={event.id} 
+                        id={event.id}
+                        title={event.title}
+                        description={event.description}
+                        category={event.category}
+                        date={new Date(event.date)}
+                        time={event.time}
+                        venue={event.venue}
+                        price={event.price}
+                        imageUrl={event.imageUrl}
+                        status={event.status}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <Calendar className="h-16 w-16 text-muted-foreground mb-4" />
+                    <h3 className="text-2xl font-bold mb-2">No events found</h3>
+                    <p className="text-muted-foreground mb-6 max-w-md">
+                      We couldn't find any events matching your search criteria. Try adjusting your filters or search terms.
+                    </p>
+                    <Button onClick={() => {
+                      setSearchQuery("");
+                      setTimeFilter("all");
+                      setSearchParams({});
+                    }}>
+                      Clear All Filters
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
             
             {view === "list" && (
-              <div className="space-y-4">
-                {events.map(event => (
-                  <div 
-                    key={event.id} 
-                    className="flex flex-col sm:flex-row border rounded-lg overflow-hidden bg-card hover:bg-card/80 transition-colors"
-                  >
-                    <div className="sm:w-1/3 h-48 sm:h-auto relative">
-                      <img 
-                        src={event.imageUrl} 
-                        alt={event.title} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-6 flex-1">
-                      <h3 className="text-xl font-bold mb-2">{event.title}</h3>
-                      <div className="flex flex-wrap gap-4 mb-3 text-sm text-muted-foreground">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          {event.date.toLocaleDateString()}
+              <>
+                {filteredEvents.length > 0 ? (
+                  <div className="space-y-4">
+                    {filteredEvents.map(event => (
+                      <div 
+                        key={event.id} 
+                        className="flex flex-col sm:flex-row border rounded-lg overflow-hidden bg-card hover:bg-card/80 transition-colors"
+                      >
+                        <div className="sm:w-1/3 h-48 sm:h-auto relative">
+                          <img 
+                            src={event.imageUrl} 
+                            alt={event.title} 
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {event.venue}
+                        <div className="p-6 flex-1">
+                          <h3 className="text-xl font-bold mb-2">{event.title}</h3>
+                          <div className="flex flex-wrap gap-4 mb-3 text-sm text-muted-foreground">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              {new Date(event.date).toLocaleDateString()}
+                            </div>
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-1" />
+                              {event.venue}
+                            </div>
+                          </div>
+                          <p className="text-muted-foreground mb-4 line-clamp-2">
+                            {event.description}
+                          </p>
+                          <div className="flex items-center justify-between mt-auto">
+                            <div className="font-semibold">
+                              {typeof event.price === "number" 
+                                ? event.price === 0 
+                                  ? "Free" 
+                                  : `$${event.price.toFixed(2)}`
+                                : event.price}
+                            </div>
+                            <Button asChild>
+                              <Link to={`/events/${event.id}`}>View Details</Link>
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-muted-foreground mb-4 line-clamp-2">
-                        {event.description}
-                      </p>
-                      <div className="flex items-center justify-between mt-auto">
-                        <div className="font-semibold">
-                          {event.price > 0 ? `$${event.price}` : 'Free'}
-                        </div>
-                        <Button asChild>
-                          <Link to={`/events/${event.id}`}>View Details</Link>
-                        </Button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <Calendar className="h-16 w-16 text-muted-foreground mb-4" />
+                    <h3 className="text-2xl font-bold mb-2">No events found</h3>
+                    <p className="text-muted-foreground mb-6 max-w-md">
+                      We couldn't find any events matching your search criteria. Try adjusting your filters or search terms.
+                    </p>
+                    <Button onClick={() => {
+                      setSearchQuery("");
+                      setTimeFilter("all");
+                      setSearchParams({});
+                    }}>
+                      Clear All Filters
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
             
             {view === "map" && (
@@ -182,13 +336,6 @@ const EventsDiscovery = () => {
                 </div>
               </div>
             )}
-            
-            {/* Load More */}
-            <div className="flex justify-center mt-10">
-              <Button variant="outline" className="gap-2">
-                Load More Events
-              </Button>
-            </div>
           </div>
         </div>
       </div>
