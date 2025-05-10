@@ -232,7 +232,7 @@ const Index = () => {
           <p className="text-xl mb-8 text-white/80">
             Create and manage your events with our easy-to-use platform. Reach more people and boost your ticket sales.
           </p>
-          <Button size="lg" variant="accent" asChild className="shadow-glow-accent">
+          <Button size="lg" variant="secondary" asChild className="shadow-glow-secondary">
             <Link to="/create">Create an Event</Link>
           </Button>
         </div>
@@ -243,7 +243,7 @@ const Index = () => {
 }
 
 // Mock data for featured events
-const featuredEvents = [
+export const featuredEvents = [
   {
     id: "1",
     title: "Tech Conference 2025",

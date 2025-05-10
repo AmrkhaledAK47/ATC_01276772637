@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, ArrowLeft, Ticket } from "lucide-react"
 import { motion } from "framer-motion"
-import { EventCard, EventCardProps } from "@/components/events/event-card"
+import { EventCard } from "@/components/events/event-card"
 
-// Mock data - in a real app this would come from an API
+// Import featuredEvents from Index
 import { featuredEvents } from "./Index"
 
 const NotFound = () => {
