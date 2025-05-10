@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { AdminLayout } from "@/layouts/admin-layout"
 import { Button } from "@/components/ui/button"
@@ -9,27 +9,21 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Switch } from "@/components/ui/switch"
 import { format } from "date-fns"
 import { CalendarIcon, ImagePlus } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useEvents, Event } from "@/hooks/useEvents"
-import { useAuth } from "@/contexts/AuthContext"
-import { toast } from "@/hooks/use-toast"
 
 const EventForm = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getEvent, addEvent, updateEvent, deleteEvent } = useEvents()
-  const { user } = useAuth()
   const isEditMode = !!id
   
   // Find event if in edit mode
-  const eventToEdit = isEditMode ? getEvent(id) : null
+  const eventToEdit = isEditMode ? events.find(event => event.id === id) : null
   
   // Form state
   const [eventData, setEventData] = useState({
-    title: eventToEdit?.title || "",
+    name: eventToEdit?.name || "",
     description: eventToEdit?.description || "",
     category: eventToEdit?.category || "Conference",
     date: eventToEdit?.date || new Date(),
@@ -37,117 +31,18 @@ const EventForm = () => {
     venue: eventToEdit?.venue || "",
     price: eventToEdit?.price || 0,
     imageUrl: eventToEdit?.imageUrl || "",
-    status: eventToEdit?.status || "available",
-    featured: eventToEdit?.featured || false,
+    status: eventToEdit?.status || "draft"
   })
   
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // Here would be the API call to save the event
+    console.log("Event data:", eventData)
     
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "You must be logged in to perform this action",
-        variant: "destructive"
-      })
-      return
-    }
-    
-    setIsSubmitting(true)
-    
-    try {
-      // Validate the data
-      if (!eventData.title || !eventData.description || !eventData.venue) {
-        toast({
-          title: "Validation Error",
-          description: "Please fill in all required fields",
-          variant: "destructive"
-        })
-        setIsSubmitting(false)
-        return
-      }
-
-      // Handle event creation/update
-      if (isEditMode && id) {
-        updateEvent(id, eventData)
-        toast({
-          title: "Event updated",
-          description: "The event has been updated successfully",
-        })
-      } else {
-        addEvent({
-          title: eventData.title,
-          description: eventData.description,
-          category: eventData.category,
-          date: eventData.date,
-          time: eventData.time,
-          venue: eventData.venue,
-          price: eventData.price,
-          imageUrl: eventData.imageUrl,
-          status: eventData.status as "available" | "sold-out" | "few-tickets" | "free",
-          featured: eventData.featured
-        }, user.id)
-        
-        toast({
-          title: "Event created",
-          description: "The event has been created successfully",
-        })
-      }
-      
-      // Redirect back to event management
-      navigate("/admin/events")
-    } catch (error) {
-      console.error("Error saving event:", error)
-      toast({
-        title: "Error",
-        description: "There was an error saving the event",
-        variant: "destructive"
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
+    // Redirect back to event management
+    navigate("/admin/events")
   }
-  
-  // Handle event deletion
-  const handleDelete = async () => {
-    if (!id) return
-    
-    setIsDeleting(true)
-    
-    try {
-      deleteEvent(id)
-      toast({
-        title: "Event deleted",
-        description: "The event has been deleted successfully",
-      })
-      navigate("/admin/events")
-    } catch (error) {
-      console.error("Error deleting event:", error)
-      toast({
-        title: "Error",
-        description: "There was an error deleting the event",
-        variant: "destructive"
-      })
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-  
-  // Sample image options for the demo
-  const sampleImages = [
-    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1551818255-e6e10975bc17?q=80&w=2073&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?q=80&w=2074&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1531058020387-3be344556be6?q=80&w=2070&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1585211969224-3e992986159d?q=80&w=2071&auto=format&fit=crop",
-  ]
-  
-  const [showImageSelector, setShowImageSelector] = useState(false)
   
   return (
     <AdminLayout>
@@ -168,12 +63,12 @@ const EventForm = () => {
           <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
           
           <div className="space-y-2">
-            <Label htmlFor="title">Event Title</Label>
+            <Label htmlFor="name">Event Name</Label>
             <Input 
-              id="title"
-              value={eventData.title}
-              onChange={(e) => setEventData({...eventData, title: e.target.value})}
-              placeholder="Enter event title"
+              id="name"
+              value={eventData.name}
+              onChange={(e) => setEventData({...eventData, name: e.target.value})}
+              placeholder="Enter event name"
               required
               className="max-w-2xl"
             />
@@ -217,30 +112,16 @@ const EventForm = () => {
               <Label htmlFor="status">Status</Label>
               <Select 
                 value={eventData.status}
-                onValueChange={(value) => setEventData({
-                  ...eventData, 
-                  status: value as "available" | "sold-out" | "few-tickets" | "free"
-                })}
+                onValueChange={(value) => setEventData({...eventData, status: value})}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="few-tickets">Few Tickets Left</SelectItem>
-                  <SelectItem value="sold-out">Sold Out</SelectItem>
-                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="featured"
-                checked={eventData.featured}
-                onCheckedChange={(checked) => setEventData({...eventData, featured: checked})}
-              />
-              <Label htmlFor="featured">Feature this event on the homepage</Label>
             </div>
           </div>
         </div>
@@ -311,7 +192,6 @@ const EventForm = () => {
                 id="price"
                 type="number" 
                 min="0"
-                step="0.01"
                 value={eventData.price}
                 onChange={(e) => setEventData({...eventData, price: Number(e.target.value)})}
                 className="pl-8"
@@ -335,7 +215,7 @@ const EventForm = () => {
                     variant="secondary" 
                     size="sm" 
                     className="absolute bottom-2 right-2"
-                    onClick={() => setShowImageSelector(true)}
+                    onClick={() => setEventData({...eventData, imageUrl: ""})}
                   >
                     Change Image
                   </Button>
@@ -343,45 +223,22 @@ const EventForm = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center">
                   <ImagePlus className="h-10 w-10 text-muted-foreground/70 mb-2" />
-                  <p className="text-muted-foreground mb-1">Select an image for your event</p>
+                  <p className="text-muted-foreground mb-1">Drag & drop an image here or click to browse</p>
                   <p className="text-xs text-muted-foreground">Recommended size: 1200 x 600 pixels</p>
                   <Button 
                     type="button" 
                     variant="secondary" 
                     className="mt-4"
-                    onClick={() => setShowImageSelector(true)}
+                    onClick={() => setEventData({
+                      ...eventData, 
+                      imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop"
+                    })}
                   >
                     Select Image
                   </Button>
                 </div>
               )}
             </div>
-            
-            {/* Image Selector */}
-            {showImageSelector && (
-              <div className="mt-4">
-                <h3 className="text-sm font-medium mb-2">Select an image:</h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {sampleImages.map((image, index) => (
-                    <div 
-                      key={index} 
-                      className={cn(
-                        "border-2 rounded-md overflow-hidden cursor-pointer aspect-video",
-                        eventData.imageUrl === image 
-                          ? "border-primary" 
-                          : "border-transparent hover:border-border"
-                      )}
-                      onClick={() => {
-                        setEventData({...eventData, imageUrl: image});
-                        setShowImageSelector(false);
-                      }}
-                    >
-                      <img src={image} alt={`Option ${index + 1}`} className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
         
@@ -399,29 +256,17 @@ const EventForm = () => {
             <Button
               type="button"
               variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
+              onClick={() => {
+                // Here would be the delete API call
+                navigate("/admin/events")
+              }}
             >
-              {isDeleting ? (
-                <>
-                  <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete Event"
-              )}
+              Delete Event
             </Button>
           )}
           
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                {isEditMode ? "Updating..." : "Creating..."}
-              </>
-            ) : (
-              isEditMode ? "Update Event" : "Create Event"
-            )}
+          <Button type="submit">
+            {isEditMode ? "Update Event" : "Create Event"}
           </Button>
         </div>
       </form>
@@ -429,4 +274,32 @@ const EventForm = () => {
   )
 }
 
-export default EventForm;
+// Mock data
+const events = [
+  {
+    id: "1",
+    name: "Tech Conference 2025",
+    description: "Join the biggest tech conference in the city with renowned speakers and networking opportunities.",
+    category: "Conference",
+    date: new Date(2025, 5, 15),
+    time: "9:00 AM - 5:00 PM",
+    venue: "Downtown Convention Center",
+    price: 199,
+    imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
+    status: "published",
+  },
+  {
+    id: "2",
+    name: "Summer Music Festival",
+    description: "A weekend of amazing performances by top artists across multiple genres.",
+    category: "Music",
+    date: new Date(2025, 7, 5),
+    time: "12:00 PM - 11:00 PM",
+    venue: "Riverside Park",
+    price: 89,
+    imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop",
+    status: "published",
+  },
+]
+
+export default EventForm

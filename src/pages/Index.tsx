@@ -12,25 +12,23 @@ import { Newsletter } from "@/components/common/newsletter"
 import { FeaturedCarousel } from "@/components/events/featured-carousel" 
 import { CategoryFilter } from "@/components/events/category-filter"
 import { Input } from "@/components/ui/input"
-import { useEvents } from "@/hooks/useEvents"
 
 const Index = () => {
-  const { events } = useEvents()
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [email, setEmail] = useState("")
-  const [filteredEvents, setFilteredEvents] = useState(events)
+  const [filteredEvents, setFilteredEvents] = useState(featuredEvents)
   const [isScrolling, setIsScrolling] = useState(false)
 
   // Apply category filtering
   useEffect(() => {
     if (selectedCategory === "all") {
-      setFilteredEvents(events)
+      setFilteredEvents(featuredEvents)
     } else {
       setFilteredEvents(
-        events.filter(event => event.category.toLowerCase() === selectedCategory.toLowerCase())
+        featuredEvents.filter(event => event.category.toLowerCase() === selectedCategory)
       )
     }
-  }, [selectedCategory, events])
+  }, [selectedCategory])
 
   // Setup scroll observation for animations
   useEffect(() => {
@@ -63,7 +61,7 @@ const Index = () => {
                 <Link to="/events">Browse Events</Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="bg-background/40 backdrop-blur">
-                <Link to="/auth">Book an Event</Link>
+                <Link to="/create">Host an Event</Link>
               </Button>
             </div>
           </div>
@@ -117,28 +115,28 @@ const Index = () => {
           </TabsList>
           <TabsContent value="all" className="mt-0">
             <div className="stagger-animate grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredEvents.slice(0, 8).map((event) => (
+              {filteredEvents.map((event) => (
                 <EventCard key={event.id} {...event} />
               ))}
             </div>
           </TabsContent>
           <TabsContent value="today" className="mt-0">
             <div className="stagger-animate grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredEvents.slice(0, 4).map((event) => (
+              {filteredEvents.slice(0, 2).map((event) => (
                 <EventCard key={event.id} {...event} />
               ))}
             </div>
           </TabsContent>
           <TabsContent value="weekend" className="mt-0">
             <div className="stagger-animate grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredEvents.slice(2, 6).map((event) => (
+              {filteredEvents.slice(1, 4).map((event) => (
                 <EventCard key={event.id} {...event} />
               ))}
             </div>
           </TabsContent>
           <TabsContent value="upcoming" className="mt-0">
             <div className="stagger-animate grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredEvents.slice(4, 8).map((event) => (
+              {filteredEvents.slice(2, 6).map((event) => (
                 <EventCard key={event.id} {...event} />
               ))}
             </div>
@@ -153,7 +151,7 @@ const Index = () => {
             Trending Events
           </span>
         </h2>
-        <FeaturedCarousel events={events.filter(e => e.featured).length > 0 ? events.filter(e => e.featured) : events.slice(0, 5)} />
+        <FeaturedCarousel events={featuredEvents} />
       </section>
       
       {/* Categories Section with Parallax */}
@@ -235,7 +233,7 @@ const Index = () => {
             Create and manage your events with our easy-to-use platform. Reach more people and boost your ticket sales.
           </p>
           <Button size="lg" variant="secondary" asChild className="shadow-glow-secondary">
-            <Link to="/auth">Create an Event</Link>
+            <Link to="/create">Create an Event</Link>
           </Button>
         </div>
         <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
@@ -243,6 +241,106 @@ const Index = () => {
     </MainLayout>
   )
 }
+
+// Mock data for featured events
+export const featuredEvents = [
+  {
+    id: "1",
+    title: "Tech Conference 2025",
+    description: "Join the biggest tech conference in the city with renowned speakers and networking opportunities.",
+    category: "Conference",
+    date: new Date(2025, 5, 15),
+    time: "9:00 AM - 5:00 PM",
+    venue: "Downtown Convention Center",
+    price: 199,
+    imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
+    status: "available" as const,
+  },
+  {
+    id: "2",
+    title: "Summer Music Festival",
+    description: "A weekend of amazing performances by top artists across multiple genres.",
+    category: "Music",
+    date: new Date(2025, 7, 5),
+    time: "12:00 PM - 11:00 PM",
+    venue: "Riverside Park",
+    price: 89,
+    imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop",
+    status: "few-tickets" as const,
+  },
+  {
+    id: "3",
+    title: "Digital Marketing Workshop",
+    description: "Learn the latest strategies and tools to level up your marketing skills.",
+    category: "Workshop",
+    date: new Date(2025, 4, 22),
+    time: "10:00 AM - 3:00 PM",
+    venue: "Business Hub",
+    price: 49,
+    imageUrl: "https://images.unsplash.com/photo-1551818255-e6e10975bc17?q=80&w=2073&auto=format&fit=crop",
+    status: "available" as const,
+  },
+  {
+    id: "4",
+    title: "Charity Run for Education",
+    description: "5k and 10k runs to raise funds for underprivileged children's education.",
+    category: "Sports",
+    date: new Date(2025, 3, 10),
+    time: "7:00 AM",
+    venue: "City Park",
+    price: 25,
+    imageUrl: "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?q=80&w=2074&auto=format&fit=crop",
+    status: "available" as const,
+  },
+  {
+    id: "5",
+    title: "Art Exhibition: Future Perspectives",
+    description: "Showcasing works by emerging artists exploring themes of technology and humanity.",
+    category: "Arts",
+    date: new Date(2025, 5, 1),
+    time: "10:00 AM - 6:00 PM",
+    venue: "Modern Art Gallery",
+    price: 0,
+    imageUrl: "https://images.unsplash.com/photo-1531058020387-3be344556be6?q=80&w=2070&auto=format&fit=crop",
+    status: "free" as const,
+  },
+  {
+    id: "6",
+    title: "Comedy Night",
+    description: "An evening of laughter with the city's best stand-up comedians.",
+    category: "Entertainment",
+    date: new Date(2025, 2, 25),
+    time: "8:00 PM",
+    venue: "Laugh Factory",
+    price: 35,
+    imageUrl: "https://images.unsplash.com/photo-1585211969224-3e992986159d?q=80&w=2071&auto=format&fit=crop",
+    status: "sold-out" as const,
+  },
+  {
+    id: "7",
+    title: "Charity Gala Dinner",
+    description: "An elegant evening to raise funds for local homeless shelters.",
+    category: "Charity",
+    date: new Date(2025, 6, 12),
+    time: "7:00 PM - 11:00 PM",
+    venue: "Grand Ballroom",
+    price: 150,
+    imageUrl: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
+    status: "available" as const,
+  },
+  {
+    id: "8",
+    title: "Film Festival Opening",
+    description: "Opening night of the international film festival with premiere screenings.",
+    category: "Entertainment",
+    date: new Date(2025, 9, 5),
+    time: "6:00 PM - 10:00 PM",
+    venue: "Cinema Plaza",
+    price: 50,
+    imageUrl: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=2070&auto=format&fit=crop",
+    status: "few-tickets" as const,
+  },
+];
 
 // Category mock data
 const categories = [

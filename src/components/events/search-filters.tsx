@@ -11,12 +11,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
-import { Search, ArrowRight, Calendar, MapPin, Tag, DollarSign } from "lucide-react"
+import { Search, ArrowRight } from "lucide-react"
 
 export function SearchFilters() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [category, setCategory] = React.useState("");
-  const [location, setLocation] = React.useState("");
   const [startDate, setStartDate] = React.useState<Date>();
   const [priceRange, setPriceRange] = React.useState("");
   
@@ -25,7 +24,6 @@ export function SearchFilters() {
     console.log({
       searchTerm,
       category,
-      location,
       startDate,
       priceRange
     });
@@ -35,25 +33,23 @@ export function SearchFilters() {
   return (
     <div className="p-4 md:p-6 bg-card rounded-lg border shadow-sm">
       <form onSubmit={handleSearch}>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="search" className="flex items-center gap-2">
-              <Search className="h-4 w-4 text-primary" />
-              Search
-            </Label>
-            <Input
-              id="search"
-              placeholder="Search events..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <Label htmlFor="search">Search</Label>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="search"
+                placeholder="Search events..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="category" className="flex items-center gap-2">
-              <Tag className="h-4 w-4 text-primary" />
-              Category
-            </Label>
+            <Label htmlFor="category">Category</Label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger id="category">
                 <SelectValue placeholder="Select category" />
@@ -64,39 +60,12 @@ export function SearchFilters() {
                 <SelectItem value="concert">Concerts</SelectItem>
                 <SelectItem value="workshop">Workshops</SelectItem>
                 <SelectItem value="sports">Sports</SelectItem>
-                <SelectItem value="arts">Arts</SelectItem>
-                <SelectItem value="entertainment">Entertainment</SelectItem>
-                <SelectItem value="charity">Charity</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="location" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary" />
-              Location
-            </Label>
-            <Select value={location} onValueChange={setLocation}>
-              <SelectTrigger id="location">
-                <SelectValue placeholder="Select location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                <SelectItem value="new-york">New York</SelectItem>
-                <SelectItem value="los-angeles">Los Angeles</SelectItem>
-                <SelectItem value="chicago">Chicago</SelectItem>
-                <SelectItem value="miami">Miami</SelectItem>
-                <SelectItem value="austin">Austin</SelectItem>
-                <SelectItem value="seattle">Seattle</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="date" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-primary" />
-              Date
-            </Label>
+            <Label htmlFor="date">Date</Label>
             <DatePicker 
               date={startDate}
               setDate={setStartDate}
@@ -105,10 +74,7 @@ export function SearchFilters() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="price" className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-primary" />
-              Price Range
-            </Label>
+            <Label htmlFor="price">Price Range</Label>
             <Select value={priceRange} onValueChange={setPriceRange}>
               <SelectTrigger id="price">
                 <SelectValue placeholder="Any price" />
@@ -125,8 +91,8 @@ export function SearchFilters() {
           </div>
         </div>
         
-        <div className="mt-6">
-          <Button type="submit" className="w-full gap-2">
+        <div className="mt-4 flex justify-end">
+          <Button type="submit" className="gap-1">
             Search Events
             <ArrowRight className="h-4 w-4" />
           </Button>

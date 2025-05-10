@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import React, { useState } from "react"
 import { AdminLayout } from "@/layouts/admin-layout"
 import {
   Table,
@@ -19,68 +18,26 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { BadgeStatus } from "@/components/ui/badge-status"
-import { format, isPast, isFuture } from "date-fns"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { Search, MoreHorizontal, Plus, Filter, Download, Calendar } from "lucide-react"
-import { useEvents } from "@/hooks/useEvents"
-import { useAuth } from "@/contexts/AuthContext"
-import { toast } from "@/hooks/use-toast"
+import { Link } from "react-router-dom"
+import { format } from "date-fns"
+import { Search, MoreHorizontal, Plus, Filter, Download } from "lucide-react"
 
 const EventManagement = () => {
-  const { events, deleteEvent } = useEvents()
-  const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [dateFilter, setDateFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const eventsPerPage = 10
   
-  // Filter events based on search query, status and date
-  const filteredEvents = events.filter(event => {
-    const matchesSearch = 
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.venue.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.category.toLowerCase().includes(searchQuery.toLowerCase());
-      
-    const matchesStatus = 
-      statusFilter === "all" || 
-      event.status === statusFilter;
-      
-    let matchesDate = true;
-    if (dateFilter === "upcoming") {
-      matchesDate = isFuture(event.date);
-    } else if (dateFilter === "past") {
-      matchesDate = isPast(event.date);
-    }
-    
-    return matchesSearch && matchesStatus && matchesDate;
-  });
+  // Filter events based on search query
+  const filteredEvents = events.filter(event => 
+    event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    event.venue.toLowerCase().includes(searchQuery.toLowerCase())
+  )
   
   // Calculate pagination
-  const indexOfLastEvent = currentPage * eventsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
-  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
-  
-  // Handle event deletion
-  const handleDeleteEvent = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
-      try {
-        deleteEvent(id);
-        toast({
-          title: "Event deleted",
-          description: "The event has been successfully deleted",
-        });
-      } catch (error) {
-        console.error("Error deleting event:", error);
-        toast({
-          title: "Error",
-          description: "Failed to delete the event",
-          variant: "destructive",
-        });
-      }
-    }
-  };
+  const indexOfLastEvent = currentPage * eventsPerPage
+  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage
+  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent)
+  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage)
   
   return (
     <AdminLayout>
@@ -103,35 +60,13 @@ const EventManagement = () => {
           />
         </div>
         
-        <div className="flex flex-wrap gap-2">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="available">Available</SelectItem>
-              <SelectItem value="few-tickets">Few Tickets</SelectItem>
-              <SelectItem value="sold-out">Sold Out</SelectItem>
-              <SelectItem value="free">Free</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Filter by date" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Dates</SelectItem>
-              <SelectItem value="upcoming">Upcoming</SelectItem>
-              <SelectItem value="past">Past</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Button variant="outline" size="icon" title="Export events">
-            <Download className="h-4 w-4" />
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Filter className="h-4 w-4 mr-2" /> Filter
           </Button>
-          
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" /> Export
+          </Button>
           <Button asChild>
             <Link to="/admin/events/create">
               <Plus className="h-4 w-4 mr-2" /> Create Event
@@ -145,9 +80,9 @@ const EventManagement = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[250px]">Event Name</TableHead>
+              <TableHead className="w-[200px]">Event Name</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead>Time</TableHead>
               <TableHead>Venue</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
@@ -158,40 +93,22 @@ const EventManagement = () => {
             {currentEvents.length > 0 ? (
               currentEvents.map(event => (
                 <TableRow key={event.id} className="hover:bg-muted/50">
-                  <TableCell className="font-medium">{event.title}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3 text-primary" />
-                      {format(event.date, "MMM dd, yyyy")}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {event.time}
-                    </div>
-                  </TableCell>
-                  <TableCell>{event.category}</TableCell>
+                  <TableCell className="font-medium">{event.name}</TableCell>
+                  <TableCell>{format(event.date, "MMM dd, yyyy")}</TableCell>
+                  <TableCell>{event.time}</TableCell>
                   <TableCell>{event.venue}</TableCell>
-                  <TableCell>
-                    {event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}
-                  </TableCell>
+                  <TableCell>${event.price.toFixed(2)}</TableCell>
                   <TableCell>
                     <BadgeStatus
                       variant={
-                        event.status === "available" 
-                          ? "default" 
-                          : event.status === "few-tickets" 
-                          ? "warning"
-                          : event.status === "sold-out"
-                          ? "destructive"
-                          : "success"
+                        event.status === "published" 
+                          ? "success" 
+                          : event.status === "draft" 
+                          ? "default"
+                          : "warning"
                       }
                     >
-                      {event.status === "available" 
-                        ? "Available" 
-                        : event.status === "few-tickets" 
-                        ? "Few tickets" 
-                        : event.status === "sold-out" 
-                        ? "Sold out"
-                        : "Free"}
+                      {event.status}
                     </BadgeStatus>
                   </TableCell>
                   <TableCell className="text-right">
@@ -208,10 +125,7 @@ const EventManagement = () => {
                         <DropdownMenuItem asChild>
                           <Link to={`/admin/events/edit/${event.id}`}>Edit</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-destructive"
-                          onClick={() => handleDeleteEvent(event.id)}
-                        >
+                        <DropdownMenuItem className="text-destructive">
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -222,21 +136,7 @@ const EventManagement = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="text-center h-24">
-                  {searchQuery || statusFilter !== "all" || dateFilter !== "all" ? (
-                    <>
-                      <div className="font-medium">No matching events found</div>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        Try adjusting your search or filters
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="font-medium">No events yet</div>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        Create your first event to get started
-                      </div>
-                    </>
-                  )}
+                  No events found
                 </TableCell>
               </TableRow>
             )}
@@ -273,5 +173,81 @@ const EventManagement = () => {
     </AdminLayout>
   )
 }
+
+// Mock data
+const events = [
+  {
+    id: "1",
+    name: "Tech Conference 2025",
+    date: new Date(2025, 5, 15),
+    time: "9:00 AM - 5:00 PM",
+    venue: "Downtown Convention Center",
+    price: 199,
+    status: "published",
+  },
+  {
+    id: "2",
+    name: "Summer Music Festival",
+    date: new Date(2025, 7, 5),
+    time: "12:00 PM - 11:00 PM",
+    venue: "Riverside Park",
+    price: 89,
+    status: "published",
+  },
+  {
+    id: "3",
+    name: "Digital Marketing Workshop",
+    date: new Date(2025, 4, 22),
+    time: "10:00 AM - 3:00 PM",
+    venue: "Business Hub",
+    price: 49,
+    status: "draft",
+  },
+  {
+    id: "4",
+    name: "Charity Run for Education",
+    date: new Date(2025, 3, 10),
+    time: "7:00 AM",
+    venue: "City Park",
+    price: 25,
+    status: "published",
+  },
+  {
+    id: "5",
+    name: "Art Exhibition: Future Perspectives",
+    date: new Date(2025, 5, 1),
+    time: "10:00 AM - 6:00 PM",
+    venue: "Modern Art Gallery",
+    price: 0,
+    status: "published",
+  },
+  {
+    id: "6",
+    name: "Comedy Night",
+    date: new Date(2025, 2, 25),
+    time: "8:00 PM",
+    venue: "Laugh Factory",
+    price: 35,
+    status: "cancelled",
+  },
+  {
+    id: "7",
+    name: "Charity Gala Dinner",
+    date: new Date(2025, 6, 12),
+    time: "7:00 PM - 11:00 PM",
+    venue: "Grand Ballroom",
+    price: 150,
+    status: "published",
+  },
+  {
+    id: "8",
+    name: "Film Festival Opening",
+    date: new Date(2025, 9, 5),
+    time: "6:00 PM - 10:00 PM",
+    venue: "Cinema Plaza",
+    price: 50,
+    status: "published",
+  },
+]
 
 export default EventManagement
