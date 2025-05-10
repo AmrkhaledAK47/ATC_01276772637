@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { MainLayout } from "@/layouts/main-layout";
@@ -191,7 +192,6 @@ const EventDetail = () => {
                     </Link>
                   </div>
                 ) : (
-                  // Using strict string equality check with explicit string literal type for proper TypeScript comparison
                   event.status === "sold-out" ? (
                     <Button variant="outline" className="w-full" disabled>
                       Sold Out
@@ -200,7 +200,6 @@ const EventDetail = () => {
                     <Button
                       className="w-full"
                       onClick={handleBookNow}
-                      disabled={event.status === "sold-out"}
                     >
                       Book Now
                     </Button>
