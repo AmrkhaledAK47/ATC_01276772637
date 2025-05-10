@@ -18,9 +18,6 @@ import Auth from "./pages/Auth";
 import UserDashboard from "./pages/user/UserDashboard";
 import BookingConfirmation from "./pages/bookings/BookingConfirmation";
 import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./context/AuthContext";
-import { EventProvider } from "./context/EventContext";
-import ProtectedRoute from "./components/shared/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -28,67 +25,31 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="dark" enableSystem>
       <TooltipProvider>
+        <Toaster />
+        <Sonner />
         <BrowserRouter>
-          <AuthProvider>
-            <EventProvider>
-              <Toaster />
-              <Sonner />
-              <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<Index />} />
-                <Route path="/events" element={<EventsDiscovery />} />
-                <Route path="/events/:id" element={<EventDetail />} />
-                <Route path="/auth" element={<Auth />} />
-                
-                {/* User routes */}
-                <Route path="/user/dashboard" element={
-                  <ProtectedRoute>
-                    <UserDashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/booking/confirmation/:id" element={
-                  <ProtectedRoute>
-                    <BookingConfirmation />
-                  </ProtectedRoute>
-                } />
-                
-                {/* Admin routes */}
-                <Route path="/admin" element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/events" element={
-                  <ProtectedRoute requireAdmin>
-                    <EventManagement />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/events/create" element={
-                  <ProtectedRoute requireAdmin>
-                    <EventForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/events/edit/:id" element={
-                  <ProtectedRoute requireAdmin>
-                    <EventForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/users" element={
-                  <ProtectedRoute requireAdmin>
-                    <UserManagement />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/settings" element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminSettings />
-                  </ProtectedRoute>
-                } />
-                
-                {/* Catch-all route for 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </EventProvider>
-          </AuthProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/events" element={<EventsDiscovery />} />
+            <Route path="/events/:id" element={<EventDetail />} />
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* User routes */}
+            <Route path="/user/dashboard" element={<UserDashboard />} />
+            <Route path="/booking/confirmation/:id" element={<BookingConfirmation />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/events" element={<EventManagement />} />
+            <Route path="/admin/events/create" element={<EventForm />} />
+            <Route path="/admin/events/edit/:id" element={<EventForm />} />
+            <Route path="/admin/users" element={<UserManagement />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            
+            {/* Catch-all route for 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>

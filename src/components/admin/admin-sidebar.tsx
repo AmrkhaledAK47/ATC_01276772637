@@ -1,6 +1,6 @@
 
 import * as React from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import {
   Calendar,
@@ -13,8 +13,6 @@ import {
   X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/context/AuthContext"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface SidebarLinkProps {
   to: string
@@ -40,8 +38,6 @@ const SidebarLink = ({ to, icon, label, isActive }: SidebarLinkProps) => (
 
 export function AdminSidebar() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   
   // Handle responsive behavior for mobile
@@ -59,11 +55,6 @@ export function AdminSidebar() {
     
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/auth");
-  };
   
   return (
     <>
@@ -93,20 +84,6 @@ export function AdminSidebar() {
             Admin
           </span>
         </div>
-        
-        {/* User Info */}
-        {user && (
-          <div className="px-4 py-4 border-b flex items-center gap-3">
-            <Avatar>
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{user.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-            </div>
-          </div>
-        )}
         
         {/* Navigation Links */}
         <nav className="p-4 space-y-1">
@@ -143,23 +120,10 @@ export function AdminSidebar() {
         </nav>
         
         {/* Bottom Actions */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t space-y-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start"
-            asChild
-          >
-            <Link to="/">
-              <Calendar className="h-4 w-4 mr-2" />
-              Back to Main Site
-            </Link>
-          </Button>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
           <Button
             variant="ghost"
-            size="sm"
             className="w-full justify-start text-destructive hover:text-destructive"
-            onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 mr-2" />
             Logout

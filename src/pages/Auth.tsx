@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { MainLayout } from "@/layouts/main-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -9,20 +9,12 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, UserPlus, LogIn, Github, Twitter, Facebook } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useAuth } from "@/context/AuthContext"
 
 const Auth = () => {
   const navigate = useNavigate()
-  const { isAuthenticated, login, register, isLoading } = useAuth()
   const [authTab, setAuthTab] = useState("login")
   const [showPassword, setShowPassword] = useState(false)
-  
-  useEffect(() => {
-    // Redirect if already logged in
-    if (isAuthenticated) {
-      navigate("/user/dashboard")
-    }
-  }, [isAuthenticated, navigate])
+  const [loading, setLoading] = useState(false)
   
   // Login form state
   const [loginEmail, setLoginEmail] = useState("")
@@ -68,12 +60,24 @@ const Auth = () => {
   
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    login(loginEmail, loginPassword)
+    setLoading(true)
+    
+    // Simulate login
+    setTimeout(() => {
+      setLoading(false)
+      navigate("/user/dashboard")
+    }, 1500)
   }
   
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    register(registerName, registerEmail, registerPassword)
+    setLoading(true)
+    
+    // Simulate registration
+    setTimeout(() => {
+      setLoading(false)
+      navigate("/user/dashboard")
+    }, 1500)
   }
   
   const renderPasswordStrength = () => {
@@ -106,24 +110,6 @@ const Auth = () => {
       </div>
     )
   }
-
-  // Sample credential notice
-  const demoCredentials = (
-    <div className="bg-muted/50 p-3 rounded-lg mb-4 text-sm">
-      <p className="font-medium">Demo Credentials:</p>
-      <div className="grid grid-cols-2 gap-2 mt-1">
-        <div>
-          <p className="text-xs text-muted-foreground">Admin:</p>
-          <p>admin@example.com</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">User:</p>
-          <p>user@example.com</p>
-        </div>
-      </div>
-      <p className="text-xs text-muted-foreground mt-2">Use any password for demo login</p>
-    </div>
-  )
   
   return (
     <MainLayout>
@@ -175,9 +161,6 @@ const Auth = () => {
                   Register
                 </TabsTrigger>
               </TabsList>
-              
-              {/* Demo credentials notice */}
-              {demoCredentials}
               
               <TabsContent value="login" className="mt-0">
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
@@ -235,8 +218,8 @@ const Auth = () => {
                     </label>
                   </div>
                   
-                  <Button type="submit" className="w-full h-11" disabled={isLoading}>
-                    {isLoading ? (
+                  <Button type="submit" className="w-full h-11" disabled={loading}>
+                    {loading ? (
                       <>
                         <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
                         Signing in...
@@ -348,8 +331,8 @@ const Auth = () => {
                     </label>
                   </div>
                   
-                  <Button type="submit" className="w-full h-11" disabled={isLoading}>
-                    {isLoading ? (
+                  <Button type="submit" className="w-full h-11" disabled={loading}>
+                    {loading ? (
                       <>
                         <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
                         Creating account...

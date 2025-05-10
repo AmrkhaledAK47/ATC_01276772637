@@ -1,6 +1,6 @@
 
 import * as React from "react"
-import { Link, useLocation } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/ui/mode-toggle"
 import {
@@ -21,15 +21,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { Calendar, Menu, User } from "lucide-react"
-import { useAuth } from "@/context/AuthContext"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export function Header() {
   // State to track if the mobile menu is open
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
-  const location = useLocation()
-  const { user, isAuthenticated, logout, isAdmin } = useAuth()
-  
+  // Demo state to track if user is logged in
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false)
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -46,10 +44,7 @@ export function Header() {
           <NavigationMenuList>
             <NavigationMenuItem>
               <Link to="/">
-                <NavigationMenuLink className={cn(
-                  "px-4 py-2 hover:text-primary",
-                  location.pathname === "/" && "text-primary font-medium"
-                )}>
+                <NavigationMenuLink className="px-4 py-2 hover:text-primary">
                   Home
                 </NavigationMenuLink>
               </Link>
@@ -72,10 +67,7 @@ export function Header() {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Link to="/events">
-                <NavigationMenuLink className={cn(
-                  "px-4 py-2 hover:text-primary",
-                  location.pathname === "/events" && "text-primary font-medium"
-                )}>
+                <NavigationMenuLink className="px-4 py-2 hover:text-primary">
                   All Events
                 </NavigationMenuLink>
               </Link>
@@ -87,57 +79,33 @@ export function Header() {
         <div className="flex items-center gap-2">
           <ModeToggle />
           
-          {isAuthenticated && user ? (
+          {isLoggedIn ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full overflow-hidden">
-                  <Avatar>
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <User className="h-5 w-5" />
+                  <span className="sr-only">User menu</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                  </div>
-                </DropdownMenuLabel>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/user/dashboard">My Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/user/dashboard">My Bookings</Link>
-                </DropdownMenuItem>
-                {isAdmin && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel className="text-xs text-muted-foreground">
-                      Admin
-                    </DropdownMenuLabel>
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin">Admin Dashboard</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin/events">Manage Events</Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>My Bookings</DropdownMenuItem>
+                <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>
+                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="hidden md:flex gap-2">
-              <Button variant="ghost" asChild>
-                <Link to="/auth?tab=login">Login</Link>
+              <Button variant="ghost" onClick={() => setIsLoggedIn(true)}>
+                Login
               </Button>
-              <Button variant="default" asChild>
-                <Link to="/auth?tab=register">Sign up</Link>
+              <Button variant="default" onClick={() => setIsLoggedIn(true)}>
+                Sign up
               </Button>
             </div>
           )}
@@ -189,54 +157,19 @@ export function Header() {
               All Events
             </Link>
             
-            {isAuthenticated ? (
-              <>
-                <div className="border-t pt-3">
-                  <Link 
-                    to="/user/dashboard" 
-                    className="block px-2 py-2 hover:bg-accent/50 rounded-md"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    My Dashboard
-                  </Link>
-                  {isAdmin && (
-                    <Link 
-                      to="/admin" 
-                      className="block px-2 py-2 hover:bg-accent/50 rounded-md"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Admin Dashboard
-                    </Link>
-                  )}
-                  <Button 
-                    variant="outline" 
-                    className="w-full mt-2"
-                    onClick={() => {
-                      logout();
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Log out
-                  </Button>
-                </div>
-              </>
-            ) : (
+            {!isLoggedIn && (
               <div className="grid grid-cols-2 gap-2 pt-2 border-t">
-                <Button variant="outline" asChild>
-                  <Link 
-                    to="/auth?tab=login"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Login
-                  </Link>
+                <Button variant="outline" onClick={() => {
+                  setIsLoggedIn(true);
+                  setMobileMenuOpen(false);
+                }}>
+                  Login
                 </Button>
-                <Button variant="default" asChild>
-                  <Link 
-                    to="/auth?tab=register"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Sign up
-                  </Link>
+                <Button variant="default" onClick={() => {
+                  setIsLoggedIn(true);
+                  setMobileMenuOpen(false);
+                }}>
+                  Sign up
                 </Button>
               </div>
             )}
