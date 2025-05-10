@@ -192,6 +192,7 @@ const EventDetail = () => {
                     </Link>
                   </div>
                 ) : (
+                  // Fixed comparison by checking for string equality instead of type comparison
                   event.status !== "sold-out" ? (
                     <Button
                       className="w-full"
