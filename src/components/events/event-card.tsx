@@ -1,25 +1,19 @@
 
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { BadgeStatus } from "@/components/ui/badge-status"
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, MapPin, Star, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { motion } from "framer-motion"
+import { useAuth } from "@/contexts/AuthContext"
+import { Event } from "@/hooks/useEvents"
+import { toast } from "@/hooks/use-toast"
 
-export interface EventCardProps {
-  id: string
-  title: string
-  description: string
-  category: string
-  date: Date
-  time?: string
-  venue: string
-  price: number | string
-  imageUrl: string
-  status?: "available" | "sold-out" | "few-tickets" | "free"
-  className?: string
+export type EventCardProps = Event & {
+  className?: string;
+  hideBookButton?: boolean;
 }
 
 export function EventCard({
@@ -34,15 +28,45 @@ export function EventCard({
   imageUrl,
   status = "available",
   className,
+  hideBookButton,
 }: EventCardProps) {
   const [isHovered, setIsHovered] = React.useState(false)
   const [isFavorite, setIsFavorite] = React.useState(false)
+  const { user, bookEvent, isEventBooked } = useAuth()
+  const navigate = useNavigate()
   
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setIsFavorite(!isFavorite)
+    
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to save favorites",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    toast({
+      title: !isFavorite ? "Added to favorites" : "Removed from favorites",
+      description: !isFavorite ? "Event added to your favorites" : "Event removed from your favorites",
+    })
   }
+  
+  const handleBookNow = (e: React.MouseEvent) => {
+    e.preventDefault()
+    
+    if (!user) {
+      navigate('/auth')
+      return
+    }
+    
+    bookEvent(id)
+  }
+  
+  const isBooked = isEventBooked(id)
   
   return (
     <motion.div
@@ -89,6 +113,12 @@ export function EventCard({
               : "Free"}
           </BadgeStatus>
         </div>
+        
+        {isBooked && (
+          <div className="absolute top-2 right-12">
+            <BadgeStatus variant="default">Booked</BadgeStatus>
+          </div>
+        )}
         
         <button
           className="absolute top-2 right-2 h-8 w-8 flex items-center justify-center rounded-full bg-background/80 backdrop-blur-sm transition-colors hover:bg-background"
@@ -150,13 +180,42 @@ export function EventCard({
             </p>
           </div>
           
-          <Link to={`/events/${id}`}>
-            <Button 
-              className="shadow-sm hover:shadow-glow-accent transition-shadow"
-            >
-              View Details
-            </Button>
-          </Link>
+          {hideBookButton ? (
+            <Link to={`/events/${id}`}>
+              <Button 
+                className="shadow-sm hover:shadow-glow-accent transition-shadow"
+              >
+                View Details
+              </Button>
+            </Link>
+          ) : (
+            isBooked ? (
+              <Link to={`/events/${id}`}>
+                <Button 
+                  className="shadow-sm hover:shadow-glow-accent transition-shadow"
+                >
+                  View Details
+                </Button>
+              </Link>
+            ) : (
+              status === "sold-out" ? (
+                <Button 
+                  disabled
+                  variant="outline"
+                  className="shadow-sm"
+                >
+                  Sold Out
+                </Button>
+              ) : (
+                <Button 
+                  className="shadow-sm hover:shadow-glow-accent transition-shadow"
+                  onClick={handleBookNow}
+                >
+                  Book Now
+                </Button>
+              )
+            )
+          )}
         </div>
       </div>
     </motion.div>

@@ -1,6 +1,6 @@
 
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/ui/mode-toggle"
 import {
@@ -20,13 +20,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { Calendar, Menu, User } from "lucide-react"
+import { Calendar, Menu, User, Ticket } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function Header() {
   // State to track if the mobile menu is open
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
-  // Demo state to track if user is logged in
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false)
+  // Use our auth context
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -34,7 +36,10 @@ export function Header() {
         {/* Logo */}
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center space-x-2">
-            <Calendar className="h-6 w-6 text-primary" />
+            <div className="relative size-8 overflow-hidden rounded-full bg-primary/20 flex items-center justify-center">
+              <Calendar className="size-5 text-primary" />
+              <div className="absolute inset-0 rounded-full border-2 border-primary/50 opacity-30 animate-pulse"></div>
+            </div>
             <span className="font-heading font-bold text-xl">EventHub</span>
           </Link>
         </div>
@@ -79,7 +84,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <ModeToggle />
           
-          {isLoggedIn ? (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -88,23 +93,42 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span>{user.name}</span>
+                    <span className="text-xs text-muted-foreground">{user.email}</span>
+                    <div className="mt-1">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] uppercase font-semibold bg-primary/20 text-primary">
+                        {user.role}
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>My Bookings</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+                {user.role === 'admin' && (
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    Admin Dashboard
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => navigate('/user/dashboard')}>
+                  My Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/user/bookings')}>
+                  <Ticket className="mr-2 h-4 w-4" />
+                  My Bookings
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                <DropdownMenuItem onClick={logout}>
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="hidden md:flex gap-2">
-              <Button variant="ghost" onClick={() => setIsLoggedIn(true)}>
+              <Button variant="ghost" onClick={() => navigate('/auth')}>
                 Login
               </Button>
-              <Button variant="default" onClick={() => setIsLoggedIn(true)}>
+              <Button variant="default" onClick={() => navigate('/auth')}>
                 Sign up
               </Button>
             </div>
@@ -157,19 +181,58 @@ export function Header() {
               All Events
             </Link>
             
-            {!isLoggedIn && (
+            {!user ? (
               <div className="grid grid-cols-2 gap-2 pt-2 border-t">
                 <Button variant="outline" onClick={() => {
-                  setIsLoggedIn(true);
+                  navigate('/auth');
                   setMobileMenuOpen(false);
                 }}>
                   Login
                 </Button>
                 <Button variant="default" onClick={() => {
-                  setIsLoggedIn(true);
+                  navigate('/auth');
                   setMobileMenuOpen(false);
                 }}>
                   Sign up
+                </Button>
+              </div>
+            ) : (
+              <div className="border-t pt-2 space-y-2">
+                <p className="px-2 text-sm font-medium text-muted-foreground mb-2">
+                  Account
+                </p>
+                {user.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="block px-2 py-2 hover:bg-accent/50 rounded-md"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+                <Link
+                  to="/user/dashboard"
+                  className="block px-2 py-2 hover:bg-accent/50 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  My Dashboard
+                </Link>
+                <Link
+                  to="/user/bookings"
+                  className="block px-2 py-2 hover:bg-accent/50 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  My Bookings
+                </Link>
+                <Button 
+                  variant="destructive" 
+                  className="w-full mt-2" 
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  Log out
                 </Button>
               </div>
             )}

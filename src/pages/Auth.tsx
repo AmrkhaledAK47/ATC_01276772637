@@ -1,5 +1,5 @@
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { MainLayout } from "@/layouts/main-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -9,12 +9,24 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, UserPlus, LogIn, Github, Twitter, Facebook } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useAuth } from "@/contexts/AuthContext"
 
 const Auth = () => {
   const navigate = useNavigate()
+  const { user, login, register, isLoading } = useAuth()
   const [authTab, setAuthTab] = useState("login")
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, navigate]);
   
   // Login form state
   const [loginEmail, setLoginEmail] = useState("")
@@ -25,6 +37,7 @@ const Auth = () => {
   const [registerEmail, setRegisterEmail] = useState("")
   const [registerPassword, setRegisterPassword] = useState("")
   const [passwordStrength, setPasswordStrength] = useState(0)
+  const [agreeToTerms, setAgreeToTerms] = useState(false)
   
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
@@ -60,24 +73,15 @@ const Auth = () => {
   
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    
-    // Simulate login
-    setTimeout(() => {
-      setLoading(false)
-      navigate("/user/dashboard")
-    }, 1500)
+    login(loginEmail, loginPassword)
   }
   
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    
-    // Simulate registration
-    setTimeout(() => {
-      setLoading(false)
-      navigate("/user/dashboard")
-    }, 1500)
+    if (!agreeToTerms) {
+      return; // Prevent registration if terms not accepted
+    }
+    register(registerName, registerEmail, registerPassword)
   }
   
   const renderPasswordStrength = () => {
@@ -95,7 +99,7 @@ const Auth = () => {
           {Array.from({ length: 5 }).map((_, i) => (
             <motion.div
               key={i}
-              className={`h-full flex-1 rounded-full ${i < passwordStrength ? strengths[passwordStrength - 1].color : 'bg-muted'}`}
+              className={`h-full flex-1 rounded-full ${i < passwordStrength ? strengths[passwordStrength - 1]?.color || 'bg-muted' : 'bg-muted'}`}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: i < passwordStrength ? 1 : 0 }}
               transition={{ duration: 0.3, delay: i * 0.1 }}
@@ -104,12 +108,21 @@ const Auth = () => {
         </div>
         {registerPassword && (
           <p className="text-xs text-muted-foreground">
-            Password strength: {passwordStrength > 0 ? strengths[passwordStrength - 1].label : 'Very Weak'}
+            Password strength: {passwordStrength > 0 ? strengths[passwordStrength - 1]?.label || 'Very Weak' : 'Very Weak'}
           </p>
         )}
       </div>
     )
   }
+  
+  // Add a demo credentials notice
+  const DemoCredentials = () => (
+    <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm">
+      <p className="font-medium mb-1">Demo Credentials:</p>
+      <p><strong>Admin:</strong> admin@example.com / any password</p>
+      <p><strong>User:</strong> user@example.com / any password</p>
+    </div>
+  );
   
   return (
     <MainLayout>
@@ -218,8 +231,8 @@ const Auth = () => {
                     </label>
                   </div>
                   
-                  <Button type="submit" className="w-full h-11" disabled={loading}>
-                    {loading ? (
+                  <Button type="submit" className="w-full h-11" disabled={isLoading}>
+                    {isLoading ? (
                       <>
                         <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
                         Signing in...
@@ -228,6 +241,8 @@ const Auth = () => {
                       <>Sign in</>
                     )}
                   </Button>
+                  
+                  <DemoCredentials />
                 </form>
                 
                 <div className="mt-6">
@@ -315,7 +330,11 @@ const Auth = () => {
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    <Checkbox id="terms" required />
+                    <Checkbox 
+                      id="terms" 
+                      checked={agreeToTerms}
+                      onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
+                    />
                     <label
                       htmlFor="terms"
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -331,8 +350,12 @@ const Auth = () => {
                     </label>
                   </div>
                   
-                  <Button type="submit" className="w-full h-11" disabled={loading}>
-                    {loading ? (
+                  <Button 
+                    type="submit" 
+                    className="w-full h-11" 
+                    disabled={isLoading || !agreeToTerms}
+                  >
+                    {isLoading ? (
                       <>
                         <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
                         Creating account...
