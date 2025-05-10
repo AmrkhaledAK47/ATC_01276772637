@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import confetti from "canvas-confetti"
-import { format, addToDate } from "date-fns"
+import { format, add } from "date-fns"
 import { CalendarDays, Clock, MapPin, Share2, Download, Mail, Calendar, Phone, User, Users, CreditCard, CheckCircle2, Printer, QrCode } from "lucide-react"
 import { motion } from "framer-motion"
 
