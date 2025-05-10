@@ -1,5 +1,6 @@
 
 import * as React from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,8 +13,11 @@ import {
 } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Search, ArrowRight } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 export function SearchFilters() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [category, setCategory] = React.useState("");
   const [startDate, setStartDate] = React.useState<Date>();
@@ -21,13 +25,29 @@ export function SearchFilters() {
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Build query parameters for search
+    const params = new URLSearchParams();
+    if (searchTerm) params.append("q", searchTerm);
+    if (category && category !== "all") params.append("category", category);
+    if (startDate) params.append("date", startDate.toISOString());
+    if (priceRange && priceRange !== "any") params.append("price", priceRange);
+    
+    // In a real app, this would navigate to the search results page with query params
     console.log({
       searchTerm,
       category,
       startDate,
       priceRange
     });
-    // Here you would typically call a search function or navigate to results
+    
+    // For now, just navigate to events page
+    navigate(`/events${params.toString() ? `?${params.toString()}` : ''}`);
+    
+    toast({
+      title: "Search filters applied",
+      description: "Events have been filtered based on your criteria."
+    });
   };
 
   return (
@@ -60,6 +80,9 @@ export function SearchFilters() {
                 <SelectItem value="concert">Concerts</SelectItem>
                 <SelectItem value="workshop">Workshops</SelectItem>
                 <SelectItem value="sports">Sports</SelectItem>
+                <SelectItem value="arts">Arts & Culture</SelectItem>
+                <SelectItem value="charity">Charity</SelectItem>
+                <SelectItem value="entertainment">Entertainment</SelectItem>
               </SelectContent>
             </Select>
           </div>

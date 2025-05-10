@@ -18,6 +18,13 @@ import Auth from "./pages/Auth";
 import UserDashboard from "./pages/user/UserDashboard";
 import BookingConfirmation from "./pages/bookings/BookingConfirmation";
 import NotFound from "./pages/NotFound";
+import CategoryPage from "./pages/category/CategoryPage";
+import MyBookings from "./pages/user/MyBookings";
+import FAQ from "./pages/FAQ";
+import Contact from "./pages/Contact";
+import UserProfile from "./pages/user/UserProfile";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -34,9 +41,16 @@ const App = () => (
             <Route path="/events" element={<EventsDiscovery />} />
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/category/:categoryName" element={<CategoryPage />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             
             {/* User routes */}
             <Route path="/user/dashboard" element={<UserDashboard />} />
+            <Route path="/user/profile" element={<UserProfile />} />
+            <Route path="/user/bookings" element={<MyBookings />} />
             <Route path="/booking/confirmation/:id" element={<BookingConfirmation />} />
             
             {/* Admin routes */}

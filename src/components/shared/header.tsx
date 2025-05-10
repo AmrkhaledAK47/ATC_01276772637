@@ -1,6 +1,6 @@
 
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/ui/mode-toggle"
 import {
@@ -23,10 +23,26 @@ import { cn } from "@/lib/utils"
 import { Calendar, Menu, User } from "lucide-react"
 
 export function Header() {
+  const navigate = useNavigate();
   // State to track if the mobile menu is open
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   // Demo state to track if user is logged in
   const [isLoggedIn, setIsLoggedIn] = React.useState(false)
+
+  const handleLogin = () => {
+    navigate("/auth");
+    setMobileMenuOpen(false);
+  };
+  
+  const handleSignup = () => {
+    navigate("/auth");
+    setMobileMenuOpen(false);
+  };
+  
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -72,6 +88,20 @@ export function Header() {
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link to="/faq">
+                <NavigationMenuLink className="px-4 py-2 hover:text-primary">
+                  FAQ
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link to="/contact">
+                <NavigationMenuLink className="px-4 py-2 hover:text-primary">
+                  Contact
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
         
@@ -90,21 +120,22 @@ export function Header() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>My Bookings</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/user/profile")}>Profile</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/user/dashboard")}>Dashboard</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/user/bookings")}>My Bookings</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/admin")}>Admin Panel</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                <DropdownMenuItem onClick={handleLogout}>
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="hidden md:flex gap-2">
-              <Button variant="ghost" onClick={() => setIsLoggedIn(true)}>
+              <Button variant="ghost" onClick={handleLogin}>
                 Login
               </Button>
-              <Button variant="default" onClick={() => setIsLoggedIn(true)}>
+              <Button variant="default" onClick={handleSignup}>
                 Sign up
               </Button>
             </div>
@@ -156,20 +187,74 @@ export function Header() {
             >
               All Events
             </Link>
+            <Link 
+              to="/faq" 
+              className="block px-2 py-2 hover:bg-accent/50 rounded-md"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              FAQ
+            </Link>
+            <Link 
+              to="/contact" 
+              className="block px-2 py-2 hover:bg-accent/50 rounded-md"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Contact
+            </Link>
             
             {!isLoggedIn && (
               <div className="grid grid-cols-2 gap-2 pt-2 border-t">
-                <Button variant="outline" onClick={() => {
-                  setIsLoggedIn(true);
-                  setMobileMenuOpen(false);
-                }}>
+                <Button variant="outline" onClick={handleLogin}>
                   Login
                 </Button>
-                <Button variant="default" onClick={() => {
-                  setIsLoggedIn(true);
-                  setMobileMenuOpen(false);
-                }}>
+                <Button variant="default" onClick={handleSignup}>
                   Sign up
+                </Button>
+              </div>
+            )}
+            
+            {isLoggedIn && (
+              <div className="border-t pt-2 space-y-2">
+                <p className="px-2 text-sm font-medium text-muted-foreground mb-2">
+                  My Account
+                </p>
+                <Link
+                  to="/user/profile"
+                  className="block px-2 py-2 hover:bg-accent/50 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                <Link
+                  to="/user/dashboard"
+                  className="block px-2 py-2 hover:bg-accent/50 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/user/bookings"
+                  className="block px-2 py-2 hover:bg-accent/50 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  My Bookings
+                </Link>
+                <Link
+                  to="/admin"
+                  className="block px-2 py-2 hover:bg-accent/50 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Admin Panel
+                </Link>
+                <Button 
+                  variant="destructive" 
+                  className="w-full mt-2"
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  Log out
                 </Button>
               </div>
             )}
@@ -227,5 +312,15 @@ const categories = [
     title: "Sports",
     href: "/category/sports",
     description: "Athletic competitions and sporting events."
+  },
+  {
+    title: "Arts",
+    href: "/category/arts",
+    description: "Exhibitions, performances, and creative experiences."
+  },
+  {
+    title: "Charity",
+    href: "/category/charity",
+    description: "Fundraisers and events supporting important causes."
   },
 ]
