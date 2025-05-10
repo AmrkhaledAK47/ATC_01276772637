@@ -7,6 +7,8 @@ import { Calendar, Clock, MapPin, Star, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { motion } from "framer-motion"
+import { useAuth } from "@/hooks/useAuth"
+import { useEvents } from "@/hooks/useEvents"
 
 export interface EventCardProps {
   id: string
@@ -20,6 +22,7 @@ export interface EventCardProps {
   imageUrl: string
   status?: "available" | "sold-out" | "few-tickets" | "free"
   className?: string
+  renderExtraContent?: () => React.ReactNode
 }
 
 export function EventCard({
@@ -34,9 +37,13 @@ export function EventCard({
   imageUrl,
   status = "available",
   className,
+  renderExtraContent
 }: EventCardProps) {
   const [isHovered, setIsHovered] = React.useState(false)
   const [isFavorite, setIsFavorite] = React.useState(false)
+  const { isAuthenticated } = useAuth()
+  const { isEventBooked } = useEvents()
+  const isBooked = isAuthenticated && isEventBooked(id)
   
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -89,6 +96,9 @@ export function EventCard({
               : "Free"}
           </BadgeStatus>
         </div>
+        
+        {/* Extra content (like booked badge) */}
+        {renderExtraContent && renderExtraContent()}
         
         <button
           className="absolute top-2 right-2 h-8 w-8 flex items-center justify-center rounded-full bg-background/80 backdrop-blur-sm transition-colors hover:bg-background"
@@ -150,13 +160,23 @@ export function EventCard({
             </p>
           </div>
           
-          <Link to={`/events/${id}`}>
+          {isBooked ? (
             <Button 
-              className="shadow-sm hover:shadow-glow-accent transition-shadow"
+              variant="outline" 
+              className="shadow-sm"
+              asChild
             >
-              View Details
+              <Link to={`/events/${id}`}>View Details</Link>
             </Button>
-          </Link>
+          ) : (
+            <Link to={`/events/${id}`}>
+              <Button 
+                className="shadow-sm hover:shadow-glow-accent transition-shadow"
+              >
+                Book Now
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </motion.div>

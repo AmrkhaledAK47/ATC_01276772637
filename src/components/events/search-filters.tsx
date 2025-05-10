@@ -1,103 +1,177 @@
 
-import * as React from "react"
+import React, { useState } from "react"
+import { CheckIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { DatePicker } from "@/components/ui/date-picker"
-import { Search, ArrowRight } from "lucide-react"
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Separator } from "@/components/ui/separator"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Slider } from "@/components/ui/slider"
+import { CalendarIcon } from "@radix-ui/react-icons"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
 
-export function SearchFilters() {
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [category, setCategory] = React.useState("");
-  const [startDate, setStartDate] = React.useState<Date>();
-  const [priceRange, setPriceRange] = React.useState("");
-  
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log({
-      searchTerm,
-      category,
-      startDate,
-      priceRange
-    });
-    // Here you would typically call a search function or navigate to results
+const categories = [
+  { label: "All Categories", value: "all" },
+  { label: "Conferences", value: "Conference" },
+  { label: "Music", value: "Music" },
+  { label: "Workshops", value: "Workshop" },
+  { label: "Sports", value: "Sports" },
+  { label: "Arts", value: "Arts" },
+  { label: "Entertainment", value: "Entertainment" },
+  { label: "Charity", value: "Charity" },
+  { label: "Food", value: "Food" },
+  { label: "Health", value: "Health" },
+  { label: "Business", value: "Business" }
+]
+
+export interface SearchFiltersProps {
+  onCategoryChange?: (category: string) => void;
+  selectedCategory?: string;
+}
+
+export function SearchFilters({ onCategoryChange, selectedCategory = "all" }: SearchFiltersProps) {
+  const [category, setCategory] = useState(selectedCategory)
+  const [priceRange, setPriceRange] = useState([0, 500])
+  const [date, setDate] = useState<Date | undefined>(undefined)
+  const [freebiesOnly, setFreebiesOnly] = useState(false)
+  const [availableOnly, setAvailableOnly] = useState(false)
+  const [popularOnly, setPopularOnly] = useState(false)
+
+  const handleCategoryChange = (value: string) => {
+    setCategory(value);
+    if (onCategoryChange) {
+      onCategoryChange(value);
+    }
   };
 
   return (
-    <div className="p-4 md:p-6 bg-card rounded-lg border shadow-sm">
-      <form onSubmit={handleSearch}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="search">Search</Label>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="search"
-                placeholder="Search events..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+    <div className="w-full space-y-6">
+      <div>
+        <h3 className="font-medium mb-4">Categories</h3>
+        <div className="space-y-2">
+          {categories.map((cat) => (
+            <div key={cat.value} className="flex items-center">
+              <Checkbox 
+                id={`category-${cat.value}`}
+                checked={cat.value === category}
+                onCheckedChange={() => handleCategoryChange(cat.value)}
+                className="mr-2"
               />
+              <label 
+                htmlFor={`category-${cat.value}`}
+                className="text-sm cursor-pointer w-full"
+              >
+                {cat.label}
+              </label>
             </div>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+      
+      <div>
+        <h3 className="font-medium mb-4">Price Range</h3>
+        <div className="px-2">
+          <Slider
+            defaultValue={[0, 500]}
+            max={500}
+            step={10}
+            value={priceRange}
+            onValueChange={setPriceRange}
+            className="mb-4"
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-sm">${priceRange[0]}</span>
+            <span className="text-sm">${priceRange[1]}</span>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="conference">Conferences</SelectItem>
-                <SelectItem value="concert">Concerts</SelectItem>
-                <SelectItem value="workshop">Workshops</SelectItem>
-                <SelectItem value="sports">Sports</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <DatePicker 
-              date={startDate}
-              setDate={setStartDate}
-              placeholder="Select date"
+        </div>
+      </div>
+      
+      <Separator />
+
+      <div>
+        <h3 className="font-medium mb-4">Date</h3>
+        <div className="grid gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                id="date"
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PPP") : "Select a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+      
+      <Separator />
+        
+      <div>
+        <h3 className="font-medium mb-4">Additional Filters</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="freebies-only" className="flex-grow">Free events only</Label>
+            <Switch 
+              id="freebies-only" 
+              checked={freebiesOnly}
+              onCheckedChange={setFreebiesOnly}
             />
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="price">Price Range</Label>
-            <Select value={priceRange} onValueChange={setPriceRange}>
-              <SelectTrigger id="price">
-                <SelectValue placeholder="Any price" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any price</SelectItem>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="1-50">$1 - $50</SelectItem>
-                <SelectItem value="51-100">$51 - $100</SelectItem>
-                <SelectItem value="101-500">$101 - $500</SelectItem>
-                <SelectItem value="500+">$500+</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="available-only" className="flex-grow">Available tickets only</Label>
+            <Switch 
+              id="available-only" 
+              checked={availableOnly}
+              onCheckedChange={setAvailableOnly}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="popular-only" className="flex-grow">Popular events only</Label>
+            <Switch 
+              id="popular-only" 
+              checked={popularOnly}
+              onCheckedChange={setPopularOnly}
+            />
           </div>
         </div>
-        
-        <div className="mt-4 flex justify-end">
-          <Button type="submit" className="gap-1">
-            Search Events
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </form>
+      </div>
+      
+      <Separator />
+      
+      <Button className="w-full">Apply Filters</Button>
+      <Button variant="outline" className="w-full">Reset Filters</Button>
     </div>
   )
 }

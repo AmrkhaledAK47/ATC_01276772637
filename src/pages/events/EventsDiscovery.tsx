@@ -8,16 +8,71 @@ import { SearchFilters } from "@/components/events/search-filters"
 import { EventCard } from "@/components/events/event-card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { Search, Filter, Grid3X3, List, MapPin, SlidersHorizontal, Calendar } from "lucide-react"
+import { Search, Filter, Grid3X3, List, MapPin, SlidersHorizontal, Calendar, Check } from "lucide-react"
 import { motion } from "framer-motion"
-
-import { featuredEvents } from "../Index"
+import { useEvents } from "@/hooks/useEvents"
+import { useAuth } from "@/hooks/useAuth"
+import { BadgeStatus } from "@/components/ui/badge-status"
 
 const EventsDiscovery = () => {
+  const { events, isEventBooked } = useEvents();
+  const { isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState("")
   const [view, setView] = useState("grid")
-  const [events, setEvents] = useState(featuredEvents)
+  const [filteredEvents, setFilteredEvents] = useState(events)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [sortOrder, setSortOrder] = useState("date-asc")
+  
+  // Filter events based on search query and category
+  useEffect(() => {
+    let result = [...events];
+    
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        event => 
+          event.title.toLowerCase().includes(query) || 
+          event.description.toLowerCase().includes(query) ||
+          event.venue.toLowerCase().includes(query) ||
+          event.category.toLowerCase().includes(query)
+      );
+    }
+    
+    // Category filter
+    if (selectedCategory !== "all") {
+      result = result.filter(
+        event => event.category.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+    
+    // Apply sorting
+    result = sortEvents(result, sortOrder);
+    
+    setFilteredEvents(result);
+  }, [events, searchQuery, selectedCategory, sortOrder]);
+
+  const sortEvents = (eventsToSort: any[], order: string) => {
+    return [...eventsToSort].sort((a, b) => {
+      switch (order) {
+        case "date-asc":
+          return a.date.getTime() - b.date.getTime();
+        case "date-desc":
+          return b.date.getTime() - a.date.getTime();
+        case "price-asc":
+          return a.price - b.price;
+        case "price-desc":
+          return b.price - a.price;
+        case "name-asc":
+          return a.title.localeCompare(b.title);
+        case "name-desc":
+          return b.title.localeCompare(a.title);
+        default:
+          return 0;
+      }
+    });
+  };
   
   return (
     <MainLayout>
@@ -76,18 +131,46 @@ const EventsDiscovery = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-between mb-8">
           <Tabs defaultValue="all" className="w-full sm:w-auto">
             <TabsList className="bg-muted/50">
-              <TabsTrigger value="all">All Events</TabsTrigger>
-              <TabsTrigger value="today">Today</TabsTrigger>
-              <TabsTrigger value="weekend">This Weekend</TabsTrigger>
-              <TabsTrigger value="week">This Week</TabsTrigger>
-              <TabsTrigger value="month">This Month</TabsTrigger>
+              <TabsTrigger 
+                value="all" 
+                onClick={() => setSelectedCategory("all")}
+              >
+                All Events
+              </TabsTrigger>
+              <TabsTrigger 
+                value="today"
+                onClick={() => setSelectedCategory("all")} // We'll use date filtering separately
+              >
+                Today
+              </TabsTrigger>
+              <TabsTrigger 
+                value="weekend"
+                onClick={() => setSelectedCategory("all")} // We'll use date filtering separately
+              >
+                This Weekend
+              </TabsTrigger>
+              <TabsTrigger 
+                value="week"
+                onClick={() => setSelectedCategory("all")} // We'll use date filtering separately
+              >
+                This Week
+              </TabsTrigger>
+              <TabsTrigger 
+                value="month"
+                onClick={() => setSelectedCategory("all")} // We'll use date filtering separately
+              >
+                This Month
+              </TabsTrigger>
             </TabsList>
           </Tabs>
           
           <div className="flex gap-2 items-center">
             <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground mr-2">Sort by:</span>
-            <Select defaultValue="date-asc">
+            <Select 
+              value={sortOrder}
+              onValueChange={(value) => setSortOrder(value)}
+            >
               <SelectTrigger className="w-[180px] h-9">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -115,59 +198,110 @@ const EventsDiscovery = () => {
             }}
             transition={{ duration: 0.3 }}
           >
-            <SearchFilters />
+            <SearchFilters 
+              onCategoryChange={(category) => setSelectedCategory(category)}
+              selectedCategory={selectedCategory}
+            />
           </motion.div>
           
           {/* Events Grid */}
           <div className="lg:col-span-3">
             {view === "grid" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {events.map(event => (
-                  <EventCard key={event.id} {...event} />
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto justify-center">
+                {filteredEvents.length > 0 ? (
+                  filteredEvents.map(event => {
+                    const isBooked = isAuthenticated && isEventBooked(event.id);
+                    return (
+                      <EventCard 
+                        key={event.id} 
+                        {...event}
+                        // Use render props pattern to customize card
+                        renderExtraContent={() => 
+                          isBooked ? (
+                            <div className="absolute top-12 left-2">
+                              <BadgeStatus variant="success">
+                                <Check className="h-3 w-3 mr-1" /> Booked
+                              </BadgeStatus>
+                            </div>
+                          ) : null
+                        } 
+                      />
+                    );
+                  })
+                ) : (
+                  <div className="lg:col-span-3 text-center py-12">
+                    <h3 className="text-xl font-medium mb-2">No events found</h3>
+                    <p className="text-muted-foreground mb-6">Try adjusting your search or filters</p>
+                    <Button onClick={() => {
+                      setSearchQuery('');
+                      setSelectedCategory('all');
+                    }}>Clear Filters</Button>
+                  </div>
+                )}
               </div>
             )}
             
             {view === "list" && (
               <div className="space-y-4">
-                {events.map(event => (
-                  <div 
-                    key={event.id} 
-                    className="flex flex-col sm:flex-row border rounded-lg overflow-hidden bg-card hover:bg-card/80 transition-colors"
-                  >
-                    <div className="sm:w-1/3 h-48 sm:h-auto relative">
-                      <img 
-                        src={event.imageUrl} 
-                        alt={event.title} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-6 flex-1">
-                      <h3 className="text-xl font-bold mb-2">{event.title}</h3>
-                      <div className="flex flex-wrap gap-4 mb-3 text-sm text-muted-foreground">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          {event.date.toLocaleDateString()}
+                {filteredEvents.length > 0 ? (
+                  filteredEvents.map(event => {
+                    const isBooked = isAuthenticated && isEventBooked(event.id);
+                    return (
+                      <div 
+                        key={event.id} 
+                        className="flex flex-col sm:flex-row border rounded-lg overflow-hidden bg-card hover:bg-card/80 transition-colors"
+                      >
+                        <div className="sm:w-1/3 h-48 sm:h-auto relative">
+                          <img 
+                            src={event.imageUrl} 
+                            alt={event.title} 
+                            className="w-full h-full object-cover"
+                          />
+                          {isBooked && (
+                            <div className="absolute top-2 left-2">
+                              <BadgeStatus variant="success">
+                                <Check className="h-3 w-3 mr-1" /> Booked
+                              </BadgeStatus>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {event.venue}
+                        <div className="p-6 flex-1">
+                          <h3 className="text-xl font-bold mb-2">{event.title}</h3>
+                          <div className="flex flex-wrap gap-4 mb-3 text-sm text-muted-foreground">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              {event.date.toLocaleDateString()}
+                            </div>
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-1" />
+                              {event.venue}
+                            </div>
+                          </div>
+                          <p className="text-muted-foreground mb-4 line-clamp-2">
+                            {event.description}
+                          </p>
+                          <div className="flex items-center justify-between mt-auto">
+                            <div className="font-semibold">
+                              {event.price > 0 ? `$${event.price}` : 'Free'}
+                            </div>
+                            <Button asChild>
+                              <Link to={`/events/${event.id}`}>View Details</Link>
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-muted-foreground mb-4 line-clamp-2">
-                        {event.description}
-                      </p>
-                      <div className="flex items-center justify-between mt-auto">
-                        <div className="font-semibold">
-                          {event.price > 0 ? `$${event.price}` : 'Free'}
-                        </div>
-                        <Button asChild>
-                          <Link to={`/events/${event.id}`}>View Details</Link>
-                        </Button>
-                      </div>
-                    </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-12">
+                    <h3 className="text-xl font-medium mb-2">No events found</h3>
+                    <p className="text-muted-foreground mb-6">Try adjusting your search or filters</p>
+                    <Button onClick={() => {
+                      setSearchQuery('');
+                      setSelectedCategory('all');
+                    }}>Clear Filters</Button>
                   </div>
-                ))}
+                )}
               </div>
             )}
             
@@ -184,11 +318,13 @@ const EventsDiscovery = () => {
             )}
             
             {/* Load More */}
-            <div className="flex justify-center mt-10">
-              <Button variant="outline" className="gap-2">
-                Load More Events
-              </Button>
-            </div>
+            {filteredEvents.length > 0 && (
+              <div className="flex justify-center mt-10">
+                <Button variant="outline" className="gap-2">
+                  Load More Events
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
