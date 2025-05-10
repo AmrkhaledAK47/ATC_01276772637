@@ -32,17 +32,16 @@ export function Logo({
   const logoContent = (
     <>
       <div className="relative">
-        <Ticket className={cn(
-          "text-primary rotate-45",
-          sizeClasses[size]
-        )} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-bold text-background">E</span>
+        <div className="bg-primary rounded-full p-1 rotate-45">
+          <Ticket className={cn(
+            "text-background rotate-[-45deg]",
+            sizeClasses[size]
+          )} />
         </div>
       </div>
       {showText && (
         <span className={cn(
-          "font-heading font-bold",
+          "font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary",
           textSizeClasses[size]
         )}>
           EventHub

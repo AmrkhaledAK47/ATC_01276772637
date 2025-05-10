@@ -225,6 +225,7 @@ const EventDetail = () => {
                   </div>
                 )}
 
+                {/* Fixed type error here - previously compared non-overlapping types */}
                 {event.status !== "sold-out" ? (
                   isBooked ? (
                     <div className="text-center p-4 bg-muted rounded-md">
@@ -238,7 +239,7 @@ const EventDetail = () => {
                     <Button
                       className="w-full mb-4"
                       size="lg"
-                      disabled={isBooking || event.status === "sold-out"}
+                      disabled={isBooking}
                       onClick={handleBookEvent}
                     >
                       {isBooking ? "Processing..." : "Book Now"}

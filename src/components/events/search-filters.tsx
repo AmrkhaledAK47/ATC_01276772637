@@ -23,8 +23,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { CalendarIcon } from "@radix-ui/react-icons"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "lucide-react"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { format } from "date-fns"
 
 const categories = [
@@ -120,12 +120,12 @@ export function SearchFilters({ onCategoryChange, selectedCategory = "all" }: Se
                   !date && "text-muted-foreground"
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
+                <Calendar className="mr-2 h-4 w-4" />
                 {date ? format(date, "PPP") : "Select a date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
+              <CalendarComponent
                 mode="single"
                 selected={date}
                 onSelect={setDate}
