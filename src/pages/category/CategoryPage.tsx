@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import { MainLayout } from "@/layouts/main-layout";
 import { EventCard } from "@/components/events/event-card";
 import { SearchFilters } from "@/components/events/search-filters";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { featuredEvents } from "@/pages/Index";
 import { EmptyState } from "@/components/ui/empty-state";
 

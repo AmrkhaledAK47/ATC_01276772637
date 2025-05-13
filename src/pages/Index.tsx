@@ -4,21 +4,16 @@ import { Link } from "react-router-dom"
 import { MainLayout } from "@/layouts/main-layout"
 import { Button } from "@/components/ui/button"
 import { EventCard } from "@/components/events/event-card"
-import { SearchFilters } from "@/components/events/search-filters"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Calendar } from "lucide-react"
 import { Particles } from "@/components/ui/particles"
 import { Newsletter } from "@/components/common/newsletter"
-import { FeaturedCarousel } from "@/components/events/featured-carousel" 
 import { CategoryFilter } from "@/components/events/category-filter"
-import { Input } from "@/components/ui/input"
 
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [email, setEmail] = useState("")
-  const [filteredEvents, setFilteredEvents] = useState(featuredEvents)
-  const [isScrolling, setIsScrolling] = useState(false)
-
+  const [filteredEvents, setFilteredEvents] = useState([...featuredEvents])
+  
   // Apply category filtering
   useEffect(() => {
     if (selectedCategory === "all") {
@@ -29,16 +24,6 @@ const Index = () => {
       )
     }
   }, [selectedCategory])
-
-  // Setup scroll observation for animations
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolling(window.scrollY > 50)
-    }
-    
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   return (
     <MainLayout fullWidth>
@@ -62,20 +47,6 @@ const Index = () => {
               </Button>
               <Button size="lg" variant="outline" asChild className="bg-background/40 backdrop-blur">
                 <Link to="/create">Host an Event</Link>
-              </Button>
-            </div>
-          </div>
-          
-          <div className="mt-16 max-w-xl mx-auto relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-secondary opacity-30 blur-lg"></div>
-            <div className="relative bg-card/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-              <Input 
-                type="text" 
-                placeholder="Search for events..." 
-                className="pl-5 h-14 text-lg rounded-lg bg-muted"
-              />
-              <Button className="absolute right-6 top-1/2 -translate-y-1/2">
-                Search
               </Button>
             </div>
           </div>
@@ -113,45 +84,39 @@ const Index = () => {
             <TabsTrigger value="weekend">This Weekend</TabsTrigger>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
           </TabsList>
+          
           <TabsContent value="all" className="mt-0">
-            <div className="stagger-animate grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredEvents.map((event) => (
                 <EventCard key={event.id} {...event} />
               ))}
             </div>
           </TabsContent>
+          
           <TabsContent value="today" className="mt-0">
-            <div className="stagger-animate grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredEvents.slice(0, 2).map((event) => (
                 <EventCard key={event.id} {...event} />
               ))}
             </div>
           </TabsContent>
+          
           <TabsContent value="weekend" className="mt-0">
-            <div className="stagger-animate grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredEvents.slice(1, 4).map((event) => (
                 <EventCard key={event.id} {...event} />
               ))}
             </div>
           </TabsContent>
+          
           <TabsContent value="upcoming" className="mt-0">
-            <div className="stagger-animate grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredEvents.slice(2, 6).map((event) => (
                 <EventCard key={event.id} {...event} />
               ))}
             </div>
           </TabsContent>
         </Tabs>
-      </section>
-      
-      {/* Featured Carousel */}
-      <section className="container-wide py-16 bg-gradient-to-b from-background to-secondary-900/5">
-        <h2 className="text-3xl font-bold mb-10 text-center">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-primary">
-            Trending Events
-          </span>
-        </h2>
-        <FeaturedCarousel events={featuredEvents} />
       </section>
       
       {/* Categories Section with Parallax */}
@@ -162,7 +127,7 @@ const Index = () => {
               Browse by Category
             </span>
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-animate">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {categories.map((category, index) => (
               <Link 
                 key={index} 
@@ -188,7 +153,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-radial from-primary-900/10 to-transparent opacity-30"></div>
         
         <h2 className="text-3xl font-bold mb-12 text-center relative z-10">How It Works</h2>
-        <div className="grid md:grid-cols-3 gap-8 relative z-10 stagger-animate">
+        <div className="grid md:grid-cols-3 gap-8 relative z-10">
           <div className="neumorphic-card p-6 text-center transition-transform hover:-translate-y-1 hover:shadow-glow">
             <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-light">
               <span className="text-2xl font-heading font-bold text-primary">1</span>
@@ -239,8 +204,8 @@ const Index = () => {
         <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
       </section>
     </MainLayout>
-  )
-}
+  );
+};
 
 // Mock data for featured events
 export const featuredEvents = [
@@ -366,4 +331,4 @@ const categories = [
   }
 ];
 
-export default Index
+export default Index;
