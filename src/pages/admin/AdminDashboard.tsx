@@ -18,24 +18,62 @@ import {
 import { BadgeStatus } from "@/components/ui/badge-status"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
+import { 
+  Calendar, 
+  Users, 
+  Ticket, 
+  Upload
+} from "lucide-react"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 const AdminDashboard = () => {
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const activitiesPerPage = 5;
+  
+  // Calculate pagination for activities
+  const indexOfLastActivity = currentPage * activitiesPerPage;
+  const indexOfFirstActivity = indexOfLastActivity - activitiesPerPage;
+  const currentActivities = recentActivities.slice(indexOfFirstActivity, indexOfLastActivity);
+  const totalPages = Math.ceil(recentActivities.length / activitiesPerPage);
+  
   return (
     <AdminLayout>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
         <p className="text-muted-foreground">
-          Overview of all events, bookings, and user activities.
+          Overview of system metrics, recent activities, and pending actions.
         </p>
       </div>
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Users
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">2,841</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              <span className="text-success-500">↑ 4%</span> from last month
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Events
             </CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">128</div>
@@ -45,47 +83,111 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Ticket Sales
+              Recent Bookings
             </CardTitle>
+            <Ticket className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3,642</div>
+            <div className="text-2xl font-bold">342</div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-success-500">↑ 8%</span> from last month
+              <span className="text-success-500">↑ 8%</span> last 7 days
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Revenue
+              Pending Actions
             </CardTitle>
+            <Upload className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$48,294</div>
+            <div className="text-2xl font-bold">12</div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-success-500">↑ 16%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Users
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2,841</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-success-500">↑ 4%</span> from last month
+              Image uploads to review
             </p>
           </CardContent>
         </Card>
       </div>
       
-      {/* Recent Events Table */}
+      {/* Recent Activity */}
+      <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
+      <Card className="mb-8">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Event</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead className="text-right">Details</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentActivities.map((activity) => (
+                <TableRow key={activity.id}>
+                  <TableCell>{format(activity.date, "MMM dd, yyyy")}</TableCell>
+                  <TableCell>{activity.user}</TableCell>
+                  <TableCell>{activity.event}</TableCell>
+                  <TableCell>
+                    <BadgeStatus
+                      variant={
+                        activity.action === "Booked" 
+                          ? "success" 
+                          : activity.action === "Created" 
+                          ? "secondary"
+                          : "warning"
+                      }
+                    >
+                      {activity.action}
+                    </BadgeStatus>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm">
+                      View
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          
+          {/* Pagination */}
+          <div className="flex items-center justify-end p-4 border-t">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink 
+                      isActive={currentPage === i + 1} 
+                      onClick={() => setCurrentPage(i + 1)}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Recent Events & Bookings - kept from original for reference */}
       <h2 className="text-xl font-bold mb-4">Recent Events</h2>
       <Card className="mb-8">
         <CardContent className="p-0">
@@ -132,7 +234,6 @@ const AdminDashboard = () => {
         </CardContent>
       </Card>
       
-      {/* Recent Bookings */}
       <h2 className="text-xl font-bold mb-4">Recent Bookings</h2>
       <Card>
         <CardContent className="p-0">
@@ -172,7 +273,7 @@ const AdminDashboard = () => {
   )
 }
 
-// Mock data
+// Mock data for events and bookings - kept from original
 const recentEvents = [
   {
     id: "1",
@@ -257,6 +358,94 @@ const recentBookings = [
     tickets: 2,
     amount: 0,
   },
+];
+
+// New mock data for activities
+const recentActivities = [
+  {
+    id: "A1",
+    date: new Date(2025, 3, 19),
+    user: "Jane Smith",
+    event: "Tech Conference 2025",
+    action: "Booked"
+  },
+  {
+    id: "A2",
+    date: new Date(2025, 3, 18),
+    user: "John Doe",
+    event: "Summer Music Festival",
+    action: "Booked"
+  },
+  {
+    id: "A3",
+    date: new Date(2025, 3, 18),
+    user: "Admin User",
+    event: "Digital Marketing Workshop",
+    action: "Created"
+  },
+  {
+    id: "A4",
+    date: new Date(2025, 3, 17),
+    user: "Michael Brown",
+    event: "Charity Run for Education",
+    action: "Cancelled"
+  },
+  {
+    id: "A5",
+    date: new Date(2025, 3, 17),
+    user: "Sarah Williams",
+    event: "Art Exhibition",
+    action: "Booked"
+  },
+  {
+    id: "A6",
+    date: new Date(2025, 3, 16),
+    user: "Alex Johnson",
+    event: "Tech Conference 2025",
+    action: "Booked"
+  },
+  {
+    id: "A7",
+    date: new Date(2025, 3, 16),
+    user: "Admin User",
+    event: "Summer Music Festival",
+    action: "Updated"
+  },
+  {
+    id: "A8",
+    date: new Date(2025, 3, 15),
+    user: "Lisa Brown",
+    event: "Digital Marketing Workshop",
+    action: "Booked"
+  },
+  {
+    id: "A9",
+    date: new Date(2025, 3, 15),
+    user: "Tom Wilson",
+    event: "Tech Conference 2025",
+    action: "Cancelled"
+  },
+  {
+    id: "A10",
+    date: new Date(2025, 3, 14),
+    user: "Admin User",
+    event: "Charity Run for Education",
+    action: "Created"
+  },
+  {
+    id: "A11",
+    date: new Date(2025, 3, 14),
+    user: "Emily Davis",
+    event: "Art Exhibition",
+    action: "Booked"
+  },
+  {
+    id: "A12",
+    date: new Date(2025, 3, 13),
+    user: "James Wilson",
+    event: "Tech Conference 2025",
+    action: "Booked"
+  }
 ];
 
 export default AdminDashboard
