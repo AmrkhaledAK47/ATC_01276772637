@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import { MainLayout } from "@/layouts/main-layout"
@@ -10,7 +9,7 @@ import { format } from "date-fns"
 import { motion, useInView, useScroll, useTransform } from "framer-motion"
 import { Heart, Share2, CalendarDays, Clock, MapPin, Users, ArrowRight, Star, Info, Building2, MessageSquare, CheckCircle2 } from "lucide-react"
 
-import { featuredEvents } from "../Index"
+import { featuredEvents } from "@/data/events-data"
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>()
