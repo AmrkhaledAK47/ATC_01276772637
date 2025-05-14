@@ -7,9 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Search, ArrowLeft, Ticket } from "lucide-react"
 import { motion } from "framer-motion"
 import { EventCard } from "@/components/events/event-card"
-
-// Import featuredEvents from Index
-import { featuredEvents } from "./Index"
+import { featuredEvents } from "@/data/events-data"
 
 const NotFound = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
