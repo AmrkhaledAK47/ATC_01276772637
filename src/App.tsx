@@ -59,6 +59,9 @@ const App = () => (
             <Route path="/admin/events/create" element={<EventForm />} />
             <Route path="/admin/events/edit/:id" element={<EventForm />} />
             <Route path="/admin/users" element={<UserManagement />} />
+            <Route path="/admin/categories" element={<AdminSettings />} />
+            <Route path="/admin/tags" element={<AdminSettings />} />
+            <Route path="/admin/bookings" element={<AdminSettings />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             
             {/* Catch-all route for 404 */}

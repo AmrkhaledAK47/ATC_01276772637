@@ -5,330 +5,336 @@ import { MainLayout } from "@/layouts/main-layout"
 import { Button } from "@/components/ui/button"
 import { EventCard } from "@/components/events/event-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowRight, Calendar } from "lucide-react"
+import { ArrowRight, Calendar, MapPin, Users } from "lucide-react"
 import { Particles } from "@/components/ui/particles"
 import { Newsletter } from "@/components/common/newsletter"
 import { CategoryFilter } from "@/components/events/category-filter"
 
+// Mock data
+const categories = [
+  { id: "all", name: "All Events" },
+  { id: "conference", name: "Conferences" },
+  { id: "workshop", name: "Workshops" },
+  { id: "concert", name: "Concerts" },
+  { id: "festival", name: "Festivals" },
+  { id: "exhibition", name: "Exhibitions" },
+  { id: "sports", name: "Sports" }
+];
+
+const featuredEvents = [
+  {
+    id: "1",
+    title: "Tech Conference 2025",
+    description: "Join industry leaders for insights on emerging technologies",
+    image: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?q=80&w=2070&auto=format&fit=crop",
+    date: "Jun 15-17, 2025",
+    location: "Convention Center, New York",
+    price: "$199",
+    category: "conference",
+    attendees: 1200
+  },
+  {
+    id: "2",
+    title: "Summer Music Festival",
+    description: "Three days of amazing performances across 5 stages",
+    image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop",
+    date: "Jul 8-10, 2025",
+    location: "Central Park, New York",
+    price: "$89",
+    category: "festival",
+    attendees: 5000
+  },
+  {
+    id: "3",
+    title: "Design Workshop Series",
+    description: "Interactive workshops on UI/UX design principles",
+    image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=2070&auto=format&fit=crop",
+    date: "May 22, 2025",
+    location: "Design Hub, Boston",
+    price: "$49",
+    category: "workshop",
+    attendees: 75
+  },
+  {
+    id: "4",
+    title: "Art Exhibition: Future Perspectives",
+    description: "Contemporary art exploring themes of technology and nature",
+    image: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?q=80&w=2070&auto=format&fit=crop",
+    date: "Jun 1-30, 2025",
+    location: "Modern Art Gallery, Chicago",
+    price: "Free",
+    category: "exhibition",
+    attendees: 450
+  }
+];
+
+const trendingEvents = [
+  {
+    id: "5",
+    title: "Blockchain & AI Summit",
+    description: "Exploring the intersection of blockchain and artificial intelligence",
+    image: "https://images.unsplash.com/photo-1558403194-611308249627?q=80&w=2070&auto=format&fit=crop",
+    date: "May 28, 2025",
+    location: "Tech Center, San Francisco",
+    price: "$149",
+    category: "conference",
+    attendees: 800
+  },
+  {
+    id: "6",
+    title: "Indie Film Festival",
+    description: "Showcasing independent films from around the world",
+    image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2069&auto=format&fit=crop",
+    date: "Aug 5-12, 2025",
+    location: "Cinema Arts Center, Los Angeles",
+    price: "$35",
+    category: "festival",
+    attendees: 1200
+  },
+  {
+    id: "7",
+    title: "Jazz Night Under The Stars",
+    description: "An evening of classic and contemporary jazz",
+    image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=2070&auto=format&fit=crop",
+    date: "Jun 30, 2025",
+    location: "Riverside Park, Chicago",
+    price: "$25",
+    category: "concert",
+    attendees: 350
+  },
+  {
+    id: "8",
+    title: "Marathon for Charity",
+    description: "Annual charity run supporting education initiatives",
+    image: "https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?q=80&w=2079&auto=format&fit=crop",
+    date: "Apr 10, 2025",
+    location: "City Park, Boston",
+    price: "$15",
+    category: "sports",
+    attendees: 3000
+  }
+];
+
+const howItWorks = [
+  {
+    title: "Find Events",
+    description: "Browse through our curated list of events or search for specific interests.",
+    icon: <Calendar className="h-12 w-12 text-primary" />
+  },
+  {
+    title: "Book Tickets",
+    description: "Choose your tickets and complete the secure booking process in minutes.",
+    icon: <Users className="h-12 w-12 text-primary" />
+  },
+  {
+    title: "Attend & Enjoy",
+    description: "Get your e-tickets via email and enjoy the event hassle-free.",
+    icon: <MapPin className="h-12 w-12 text-primary" />
+  }
+];
+
 const Index = () => {
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [filteredEvents, setFilteredEvents] = useState([...featuredEvents])
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [filteredEvents, setFilteredEvents] = useState(featuredEvents);
   
   // Apply category filtering
   useEffect(() => {
     if (selectedCategory === "all") {
-      setFilteredEvents(featuredEvents)
+      setFilteredEvents(featuredEvents);
     } else {
-      setFilteredEvents(
-        featuredEvents.filter(event => event.category.toLowerCase() === selectedCategory)
-      )
+      const filtered = featuredEvents.filter(
+        event => event.category === selectedCategory
+      );
+      setFilteredEvents(filtered);
     }
-  }, [selectedCategory])
+  }, [selectedCategory]);
 
   return (
-    <MainLayout fullWidth>
+    <MainLayout>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-900/20 via-background to-secondary-900/20 py-24 md:py-32 lg:py-40 overflow-hidden">
-        <Particles count={40} className="opacity-40" />
+      <section className="relative bg-gradient-to-b from-background via-primary/5 to-background py-24 md:py-32 overflow-hidden">
+        <Particles className="absolute inset-0" quantity={40} />
         <div className="container relative z-10">
-          <div className="mx-auto max-w-3xl text-center mb-12">
-            <h1 className="mb-6 animate-fade-in">
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-secondary">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                 Discover Amazing Events
               </span>
-              <span>Near You</span>
+              <span className="mt-2 block">Near You</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 animate-fade-in">
+            <p className="text-xl text-muted-foreground mb-8">
               Browse and book tickets to conferences, concerts, workshops, and more events happening in your area.
             </p>
-            <div className="flex flex-wrap justify-center gap-4 animate-fade-in">
-              <Button size="lg" asChild className="px-8 shadow-glow">
+            <div className="flex flex-wrap justify-center gap-4">
+              <Button size="lg" asChild className="px-8">
                 <Link to="/events">Browse Events</Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="bg-background/40 backdrop-blur">
-                <Link to="/create">Host an Event</Link>
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/auth">Host an Event</Link>
               </Button>
             </div>
           </div>
         </div>
-        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
       </section>
       
       {/* Category Filter Section */}
-      <section className="container-wide py-8">
-        <h2 className="text-2xl font-bold mb-6">Find Events By Category</h2>
-        <CategoryFilter 
-          selectedCategory={selectedCategory}
-          onSelect={setSelectedCategory}
-        />
+      <section className="py-12 bg-muted/30">
+        <div className="container">
+          <h2 className="text-2xl font-bold mb-6 text-center">Find Events By Category</h2>
+          <CategoryFilter 
+            selectedCategory={selectedCategory}
+            onSelect={setSelectedCategory}
+          />
+        </div>
       </section>
       
       {/* Featured Events */}
-      <section className="container-wide section-padding">
+      <section className="py-16 container">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">
+          <h2 className="text-2xl md:text-3xl font-bold">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
               Featured Events
             </span>
           </h2>
-          <Link to="/events" className="text-primary flex items-center hover:underline group">
-            View all
-            <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/events" className="group">
+              View all 
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </Button>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredEvents.length > 0 ? (
+            filteredEvents.map((event) => (
+              <EventCard
+                key={event.id}
+                id={event.id}
+                title={event.title}
+                description={event.description}
+                image={event.image}
+                date={event.date}
+                location={event.location}
+                price={event.price}
+                category={event.category}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-10">
+              <p className="text-muted-foreground">No events found in this category.</p>
+              <Button 
+                variant="link" 
+                onClick={() => setSelectedCategory("all")}
+                className="mt-2"
+              >
+                View all categories
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
+      
+      {/* How It Works */}
+      <section className="py-16 bg-muted/30">
+        <div className="container">
+          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {howItWorks.map((item, index) => (
+              <div 
+                key={index} 
+                className="bg-card border rounded-lg p-8 text-center transition-transform hover:-translate-y-1"
+              >
+                <div className="mx-auto flex justify-center mb-4">
+                  {item.icon}
+                </div>
+                <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
+                <p className="text-muted-foreground">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      
+      {/* Trending Events Tab Section */}
+      <section className="py-16 container">
+        <h2 className="text-2xl md:text-3xl font-bold mb-8">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+            Trending Events
+          </span>
+        </h2>
         
-        <Tabs defaultValue="all" className="mb-8">
-          <TabsList className="mb-6 bg-card/50 backdrop-blur">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="today">Today</TabsTrigger>
-            <TabsTrigger value="weekend">This Weekend</TabsTrigger>
+        <Tabs defaultValue="upcoming" className="w-full">
+          <TabsList className="mb-8">
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+            <TabsTrigger value="popular">Most Popular</TabsTrigger>
+            <TabsTrigger value="new">Newly Added</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="all" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredEvents.map((event) => (
-                <EventCard key={event.id} {...event} />
-              ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="today" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredEvents.slice(0, 2).map((event) => (
-                <EventCard key={event.id} {...event} />
-              ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="weekend" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredEvents.slice(1, 4).map((event) => (
-                <EventCard key={event.id} {...event} />
-              ))}
-            </div>
-          </TabsContent>
-          
           <TabsContent value="upcoming" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredEvents.slice(2, 6).map((event) => (
-                <EventCard key={event.id} {...event} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {trendingEvents.slice(0, 4).map((event) => (
+                <EventCard
+                  key={event.id}
+                  id={event.id}
+                  title={event.title}
+                  description={event.description}
+                  image={event.image}
+                  date={event.date}
+                  location={event.location}
+                  price={event.price}
+                  category={event.category}
+                />
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="popular" className="mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Sort events by attendees (most popular) */}
+              {[...trendingEvents]
+                .sort((a, b) => b.attendees - a.attendees)
+                .slice(0, 4)
+                .map((event) => (
+                  <EventCard
+                    key={event.id}
+                    id={event.id}
+                    title={event.title}
+                    description={event.description}
+                    image={event.image}
+                    date={event.date}
+                    location={event.location}
+                    price={event.price}
+                    category={event.category}
+                  />
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="new" className="mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Reverse the array to simulate "newest" events */}
+              {[...trendingEvents].reverse().slice(0, 4).map((event) => (
+                <EventCard
+                  key={event.id}
+                  id={event.id}
+                  title={event.title}
+                  description={event.description}
+                  image={event.image}
+                  date={event.date}
+                  location={event.location}
+                  price={event.price}
+                  category={event.category}
+                />
               ))}
             </div>
           </TabsContent>
         </Tabs>
       </section>
       
-      {/* Categories Section with Parallax */}
-      <section className="py-16 relative overflow-hidden">
-        <div className="container-wide">
-          <h2 className="text-3xl font-bold mb-12 text-center">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">
-              Browse by Category
-            </span>
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((category, index) => (
-              <Link 
-                key={index} 
-                to={category.href} 
-                className="group relative overflow-hidden rounded-lg aspect-square glass-card transition-all duration-500 hover:shadow-glow-accent"
-              >
-                <img 
-                  src={category.image} 
-                  alt={category.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-end p-4">
-                  <h3 className="text-white font-bold text-xl">{category.name}</h3>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-      
-      {/* How It Works Section */}
-      <section className="container-wide section-padding relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial from-primary-900/10 to-transparent opacity-30"></div>
-        
-        <h2 className="text-3xl font-bold mb-12 text-center relative z-10">How It Works</h2>
-        <div className="grid md:grid-cols-3 gap-8 relative z-10">
-          <div className="neumorphic-card p-6 text-center transition-transform hover:-translate-y-1 hover:shadow-glow">
-            <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-light">
-              <span className="text-2xl font-heading font-bold text-primary">1</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2">Find Events</h3>
-            <p className="text-muted-foreground">
-              Browse through our extensive collection of events or use the search filters to find exactly what you're looking for.
-            </p>
-          </div>
-          <div className="neumorphic-card p-6 text-center transition-transform hover:-translate-y-1 hover:shadow-glow">
-            <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-light">
-              <span className="text-2xl font-heading font-bold text-primary">2</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2">Book Tickets</h3>
-            <p className="text-muted-foreground">
-              Select your preferred event and complete the booking process securely within minutes.
-            </p>
-          </div>
-          <div className="neumorphic-card p-6 text-center transition-transform hover:-translate-y-1 hover:shadow-glow">
-            <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-light">
-              <span className="text-2xl font-heading font-bold text-primary">3</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2">Enjoy the Event</h3>
-            <p className="text-muted-foreground">
-              Receive your tickets by email, add them to your digital wallet, and enjoy your experience.
-            </p>
-          </div>
-        </div>
-      </section>
-      
-      {/* Newsletter Section */}
-      <section className="container-narrow py-16">
-        <Newsletter />
-      </section>
-      
-      {/* CTA Section */}
-      <section className="relative bg-gradient-to-br from-primary to-secondary py-16 text-white overflow-hidden">
-        <Particles count={20} className="opacity-20" />
-        <div className="container-narrow text-center relative z-10">
-          <h2 className="text-3xl font-bold mb-4">Ready to Host Your Own Event?</h2>
-          <p className="text-xl mb-8 text-white/80">
-            Create and manage your events with our easy-to-use platform. Reach more people and boost your ticket sales.
-          </p>
-          <Button size="lg" variant="secondary" asChild className="shadow-glow-secondary">
-            <Link to="/create">Create an Event</Link>
-          </Button>
-        </div>
-        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
-      </section>
+      {/* Newsletter */}
+      <Newsletter />
     </MainLayout>
-  );
-};
+  )
+}
 
-// Mock data for featured events
-export const featuredEvents = [
-  {
-    id: "1",
-    title: "Tech Conference 2025",
-    description: "Join the biggest tech conference in the city with renowned speakers and networking opportunities.",
-    category: "Conference",
-    date: new Date(2025, 5, 15),
-    time: "9:00 AM - 5:00 PM",
-    venue: "Downtown Convention Center",
-    price: 199,
-    imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
-    status: "available" as const,
-  },
-  {
-    id: "2",
-    title: "Summer Music Festival",
-    description: "A weekend of amazing performances by top artists across multiple genres.",
-    category: "Music",
-    date: new Date(2025, 7, 5),
-    time: "12:00 PM - 11:00 PM",
-    venue: "Riverside Park",
-    price: 89,
-    imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop",
-    status: "few-tickets" as const,
-  },
-  {
-    id: "3",
-    title: "Digital Marketing Workshop",
-    description: "Learn the latest strategies and tools to level up your marketing skills.",
-    category: "Workshop",
-    date: new Date(2025, 4, 22),
-    time: "10:00 AM - 3:00 PM",
-    venue: "Business Hub",
-    price: 49,
-    imageUrl: "https://images.unsplash.com/photo-1551818255-e6e10975bc17?q=80&w=2073&auto=format&fit=crop",
-    status: "available" as const,
-  },
-  {
-    id: "4",
-    title: "Charity Run for Education",
-    description: "5k and 10k runs to raise funds for underprivileged children's education.",
-    category: "Sports",
-    date: new Date(2025, 3, 10),
-    time: "7:00 AM",
-    venue: "City Park",
-    price: 25,
-    imageUrl: "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?q=80&w=2074&auto=format&fit=crop",
-    status: "available" as const,
-  },
-  {
-    id: "5",
-    title: "Art Exhibition: Future Perspectives",
-    description: "Showcasing works by emerging artists exploring themes of technology and humanity.",
-    category: "Arts",
-    date: new Date(2025, 5, 1),
-    time: "10:00 AM - 6:00 PM",
-    venue: "Modern Art Gallery",
-    price: 0,
-    imageUrl: "https://images.unsplash.com/photo-1531058020387-3be344556be6?q=80&w=2070&auto=format&fit=crop",
-    status: "free" as const,
-  },
-  {
-    id: "6",
-    title: "Comedy Night",
-    description: "An evening of laughter with the city's best stand-up comedians.",
-    category: "Entertainment",
-    date: new Date(2025, 2, 25),
-    time: "8:00 PM",
-    venue: "Laugh Factory",
-    price: 35,
-    imageUrl: "https://images.unsplash.com/photo-1585211969224-3e992986159d?q=80&w=2071&auto=format&fit=crop",
-    status: "sold-out" as const,
-  },
-  {
-    id: "7",
-    title: "Charity Gala Dinner",
-    description: "An elegant evening to raise funds for local homeless shelters.",
-    category: "Charity",
-    date: new Date(2025, 6, 12),
-    time: "7:00 PM - 11:00 PM",
-    venue: "Grand Ballroom",
-    price: 150,
-    imageUrl: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-    status: "available" as const,
-  },
-  {
-    id: "8",
-    title: "Film Festival Opening",
-    description: "Opening night of the international film festival with premiere screenings.",
-    category: "Entertainment",
-    date: new Date(2025, 9, 5),
-    time: "6:00 PM - 10:00 PM",
-    venue: "Cinema Plaza",
-    price: 50,
-    imageUrl: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=2070&auto=format&fit=crop",
-    status: "few-tickets" as const,
-  },
-];
-
-// Category mock data
-const categories = [
-  {
-    name: "Concerts",
-    href: "/category/concerts",
-    image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"
-  },
-  {
-    name: "Conferences",
-    href: "/category/conferences",
-    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop"
-  },
-  {
-    name: "Workshops",
-    href: "/category/workshops",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
-  },
-  {
-    name: "Sports",
-    href: "/category/sports",
-    image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=2070&auto=format&fit=crop"
-  }
-];
-
-export default Index;
+export default Index
