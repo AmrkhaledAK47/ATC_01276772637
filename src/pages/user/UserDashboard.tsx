@@ -1,3 +1,4 @@
+
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import { MainLayout } from "@/layouts/main-layout"
@@ -385,7 +386,6 @@ const savedEvents = [
     venue: "Grand Ballroom",
     price: 150,
     imageUrl: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop", // Add this line
     status: "available" as const,
   },
   {
@@ -398,7 +398,6 @@ const savedEvents = [
     venue: "Cinema Plaza",
     price: 50,
     imageUrl: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=2070&auto=format&fit=crop",
-    image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=2070&auto=format&fit=crop", // Add this line
     status: "few-tickets" as const,
   },
 ]

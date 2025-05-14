@@ -9,18 +9,17 @@ import { format } from "date-fns"
 import { motion } from "framer-motion"
 
 export interface EventCardProps {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  date: Date;
-  time?: string;
-  venue: string;
-  price: number | string;
-  image: string;
-  imageUrl: string;
-  status?: "available" | "sold-out" | "few-tickets" | "free";
-  className?: string;
+  id: string
+  title: string
+  description: string
+  category: string
+  date: Date
+  time?: string
+  venue: string
+  price: number | string
+  imageUrl: string
+  status?: "available" | "sold-out" | "few-tickets" | "free"
+  className?: string
 }
 
 export function EventCard({
@@ -32,7 +31,6 @@ export function EventCard({
   time,
   venue,
   price,
-  image,
   imageUrl,
   status = "available",
   className,
@@ -60,7 +58,7 @@ export function EventCard({
     >
       <div className="relative overflow-hidden aspect-[4/3]">
         <img
-          src={imageUrl || image}
+          src={imageUrl}
           alt={title}
           className={cn(
             "h-full w-full object-cover transition-transform duration-700",
@@ -147,7 +145,7 @@ export function EventCard({
               {typeof price === "number" 
                 ? price === 0 
                   ? "Free" 
-                  : `$${price}`
+                  : `$${price.toFixed(2)}`
                 : price}
             </p>
           </div>

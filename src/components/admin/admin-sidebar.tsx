@@ -11,8 +11,6 @@ import {
   Tag,
   Menu,
   X,
-  TicketIcon,
-  Layers,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -112,18 +110,6 @@ export function AdminSidebar() {
             icon={<Tag className="h-4 w-4" />}
             label="Categories"
             isActive={location.pathname.startsWith("/admin/categories")}
-          />
-          <SidebarLink
-            to="/admin/tags"
-            icon={<Layers className="h-4 w-4" />}
-            label="Tags"
-            isActive={location.pathname.startsWith("/admin/tags")}
-          />
-          <SidebarLink
-            to="/admin/bookings"
-            icon={<TicketIcon className="h-4 w-4" />}
-            label="Bookings"
-            isActive={location.pathname.startsWith("/admin/bookings")}
           />
           <SidebarLink
             to="/admin/settings"

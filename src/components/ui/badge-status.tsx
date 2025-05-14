@@ -1,28 +1,21 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-
 import { cn } from "@/lib/utils"
 
 const badgeStatusVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-muted/80 text-foreground",
-        primary:
-          "border-transparent bg-primary text-primary-foreground",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground",
-        success:
-          "border-transparent bg-success-500 text-white",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground",
-        warning:
-          "border-transparent bg-amber-500 text-white",
-        outline: "text-foreground"
-      }
+        default: "bg-primary-50 text-primary-700 ring-primary-600/20",
+        secondary: "bg-secondary-50 text-secondary-700 ring-secondary-600/20",
+        success: "bg-success-50 text-success-700 ring-success-600/20",
+        destructive: "bg-destructive-50 text-destructive-700 ring-destructive-600/20",
+        warning: "bg-warning-50 text-warning-700 ring-warning-600/20",
+        info: "bg-info-50 text-info-700 ring-info-600/20",
+        outline: "text-foreground ring-1 ring-border",
+      },
     },
     defaultVariants: {
       variant: "default",

@@ -4,7 +4,7 @@ import { MainLayout } from "@/layouts/main-layout";
 import { EventCard } from "@/components/events/event-card";
 import { SearchFilters } from "@/components/events/search-filters";
 import { CategoryFilter } from "@/components/events/category-filter";
-import { featuredEvents } from "@/data/events-data";
+import { featuredEvents } from "@/pages/Index";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "react-router-dom";
 import { Grid3X3Icon, LayoutListIcon } from "lucide-react";
@@ -55,16 +55,16 @@ const EventsDiscovery = () => {
           filtered = filtered.filter(event => event.price === 0);
           break;
         case "1-50":
-          filtered = filtered.filter(event => typeof event.price === "number" && event.price > 0 && event.price <= 50);
+          filtered = filtered.filter(event => event.price > 0 && event.price <= 50);
           break;
         case "51-100":
-          filtered = filtered.filter(event => typeof event.price === "number" && event.price > 50 && event.price <= 100);
+          filtered = filtered.filter(event => event.price > 50 && event.price <= 100);
           break;
         case "101-500":
-          filtered = filtered.filter(event => typeof event.price === "number" && event.price > 100 && event.price <= 500);
+          filtered = filtered.filter(event => event.price > 100 && event.price <= 500);
           break;
         case "500+":
-          filtered = filtered.filter(event => typeof event.price === "number" && event.price > 500);
+          filtered = filtered.filter(event => event.price > 500);
           break;
       }
     }

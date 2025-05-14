@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
-import { featuredEvents } from "@/data/events-data";
+import { featuredEvents } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
 
 // Sample booking data
