@@ -74,7 +74,7 @@ Event Hub is a comprehensive event management platform that allows users to disc
    Backend `.env` example:
    ```
    # Database
-   DATABASE_URL="postgresql://postgres:password@localhost:5432/eventhub"
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/ATC_01276772637"
    
    # Authentication
    JWT_SECRET="your-secret-key"
