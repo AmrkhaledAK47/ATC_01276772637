@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          UserRole  @default(USER)
+  isVerified    Boolean   @default(false)
+  avatar        String?
+  githubId      String?   
+  googleId      String?   
+  bookings      Booking[]
+  events        Event[]   @relation("EventOrganizer")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  ORGANIZER
+}
+
+// Event model
+model Event {
+  id             String    @id @default(uuid())
+  title          String
+  description    String
+  date           DateTime
+  time           String
+  location       String
+  price          Float
+  image          String
+  capacity       Int
+  availableSeats Int
+  isFeatured     Boolean   @default(false)
+  organizerId    String
+  categoryId     String
+  organizer      User      @relation("EventOrganizer", fields: [organizerId], references: [id])
+  category       Category  @relation(fields: [categoryId], references: [id])
+  bookings       Booking[]
+  tags           TagsOnEvents[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("events")
+}
+
+// Category model
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  image       String?
+  events      Event[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("categories")
+}
+
+// Tag model
+model Tag {
+  id        String         @id @default(uuid())
+  name      String         @unique
+  events    TagsOnEvents[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("tags")
+}
+
+// TagsOnEvents model (many-to-many relationship)
+model TagsOnEvents {
+  eventId   String
+  tagId     String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([eventId, tagId])
+  @@map("tags_on_events")
+}
+
+// Booking model
+model Booking {
+  id            String        @id @default(uuid())
+  userId        String
+  eventId       String
+  status        BookingStatus @default(PENDING)
+  tickets       Int
+  totalPrice    Float
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod
+  user          User          @relation(fields: [userId], references: [id])
+  event         Event         @relation(fields: [eventId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  ATTENDED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  PAYPAL
+  STRIPE
+  CASH
+} 

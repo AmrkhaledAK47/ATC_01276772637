@@ -1,0 +1,109 @@
+name: Event Hub CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [frontend, backend]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: ${{ matrix.project }}/package-lock.json
+      - name: Install dependencies
+        working-directory: ${{ matrix.project }}
+        run: npm ci
+      - name: Run ESLint
+        working-directory: ${{ matrix.project }}
+        run: npm run lint
+
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Run tests
+        working-directory: frontend
+        run: npm test
+
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: eventhub_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate
+      - name: Run tests
+        working-directory: backend
+        run: npm test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/eventhub_test?schema=public
+          JWT_SECRET: test_secret_key
+          JWT_EXPIRES_IN: 1h
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test-frontend, test-backend]
+    strategy:
+      matrix:
+        project: [frontend, backend]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: ${{ matrix.project }}/package-lock.json
+      - name: Install dependencies
+        working-directory: ${{ matrix.project }}
+        run: npm ci
+      - name: Build
+        working-directory: ${{ matrix.project }}
+        run: npm run build
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.project }}-build
+          path: ${{ matrix.project }}/dist 

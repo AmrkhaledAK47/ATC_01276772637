@@ -1,0 +1,145 @@
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+
+// Base API URL - use environment variable if available
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+// Default request timeout
+const DEFAULT_TIMEOUT = 30000; // 30 seconds
+
+/**
+ * The API client for making HTTP requests to the backend
+ */
+export class ApiClient {
+    private client: AxiosInstance;
+
+    constructor(config?: AxiosRequestConfig) {
+        this.client = axios.create({
+            baseURL: API_URL,
+            timeout: DEFAULT_TIMEOUT,
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            ...config,
+        });
+
+        console.log('API Client initialized with baseURL:', API_URL);
+
+        // Setup request interceptor
+        this.client.interceptors.request.use(
+            (config) => {
+                // Check for token in sessionStorage first (session login)
+                let token = sessionStorage.getItem('token');
+
+                // If not found, try localStorage (persistent login)
+                if (!token) {
+                    token = localStorage.getItem('token');
+                }
+
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+                return config;
+            },
+            (error) => {
+                return Promise.reject(error);
+            }
+        );
+
+        // Setup response interceptor
+        this.client.interceptors.response.use(
+            (response) => {
+                return response;
+            },
+            async (error: AxiosError) => {
+                const originalRequest = error.config as any;
+
+                // Add more detailed error logging
+                console.error('API Error:', {
+                    status: error.response?.status,
+                    data: error.response?.data,
+                    url: originalRequest?.url,
+                    method: originalRequest?.method
+                });
+
+                // Handle unauthorized errors (401)
+                if (error.response?.status === 401 && !originalRequest._retry) {
+                    // Clear token and redirect to login page
+                    localStorage.removeItem('token');
+                    window.location.href = '/auth';
+                    return Promise.reject(error);
+                }
+
+                return Promise.reject(error);
+            }
+        );
+    }
+
+    /**
+     * Get the base URL used for API requests
+     */
+    getBaseURL(): string {
+        return API_URL;
+    }
+
+    /**
+     * Make a GET request
+     */
+    async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+        const response: AxiosResponse<T> = await this.client.get(url, config);
+        return response.data;
+    }
+
+    /**
+     * Make a POST request
+     */
+    async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+        const response: AxiosResponse<T> = await this.client.post(url, data, config);
+        return response.data;
+    }
+
+    /**
+     * Make a PUT request
+     */
+    async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+        const response: AxiosResponse<T> = await this.client.put(url, data, config);
+        return response.data;
+    }
+
+    /**
+     * Make a PATCH request
+     */
+    async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+        const response: AxiosResponse<T> = await this.client.patch(url, data, config);
+        return response.data;
+    }
+
+    /**
+     * Make a DELETE request
+     */
+    async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+        const response: AxiosResponse<T> = await this.client.delete(url, config);
+        return response.data;
+    }
+}
+
+// Export a singleton instance
+export const apiClient = new ApiClient();
+
+// Export error helpers
+export const isAxiosError = (error: any): error is AxiosError => {
+    return axios.isAxiosError(error);
+};
+
+export const getErrorMessage = (error: unknown): string => {
+    if (isAxiosError(error)) {
+        // Return the error message from the API if available
+        return (error.response?.data?.message as string) || error.message;
+    }
+
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    return 'An unknown error occurred';
+};
